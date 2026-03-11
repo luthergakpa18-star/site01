@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Chatbot n8n - Version Optimisée</title>
+    <title>Chatbot n8n - Version Élite</title>
     <style>
         :root { --primary: #007bff; --bg: #f0f2f5; --bot-msg: #e4e6eb; }
         body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: var(--bg); display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; }
@@ -12,7 +12,7 @@
         .msg { padding: 10px 14px; border-radius: 18px; max-width: 80%; font-size: 14px; line-height: 1.4; word-wrap: break-word; }
         .user { background: var(--primary); color: white; align-self: flex-end; border-bottom-right-radius: 4px; }
         .bot { background: var(--bot-msg); color: #1c1e21; align-self: flex-start; border-bottom-left-radius: 4px; }
-        .error { background: #ffebe9; color: #d73a49; border: 1px solid #ff8182; align-self: center; font-size: 12px; }
+        .error { background: #ffebe9; color: #d73a49; border: 1px solid #ff8182; align-self: center; font-size: 12px; border-radius: 8px; padding: 5px 10px; }
         #inputArea { display: flex; padding: 10px; border-top: 1px solid #eee; background: #fff; }
         input { flex: 1; border: 1px solid #ddd; padding: 12px; border-radius: 20px; outline: none; transition: border 0.2s; }
         input:focus { border-color: var(--primary); }
@@ -32,7 +32,7 @@
 </div>
 
 <script>
-    // CONFIGURATION - À adapter
+    // CONFIGURATION
     const WEBHOOK_URL = "https://gnohite.app.n8n.cloud/webhook-test/aab112f4-0d24-408e-be7f-038740977e3d"; 
 
     const messagesContainer = document.getElementById("messages");
@@ -41,7 +41,7 @@
     function addMessage(text, type) {
         const div = document.createElement("div");
         div.className = `msg ${type}`;
-        div.textContent = text; // Protection XSS native
+        div.textContent = text; 
         messagesContainer.appendChild(div);
         messagesContainer.scrollTop = messagesContainer.scrollHeight;
         return div;
@@ -51,11 +51,9 @@
         const text = inputField.value.trim();
         if (!text) return;
 
-        // 1. Affichage utilisateur
         addMessage(text, "user");
         inputField.value = "";
         
-        // 2. Indicateur de chargement
         const loadingMsg = addMessage("Le bot réfléchit...", "bot loading");
 
         try {
@@ -72,15 +70,25 @@
 
             const data = await response.json();
             
-            // 3. Remplacement du chargement par la réponse
+            // --- LOGIQUE DE RÉCUPÉRATION FLEXIBLE ---
+            let finalReply = "Pas de réponse exploitable";
+
+            if (Array.isArray(data)) {
+                // Si n8n renvoie un tableau [ { ... } ]
+                finalReply = data[0].output || data[0].reply || finalReply;
+            } else {
+                // Si n8n renvoie un objet direct { ... }
+                finalReply = data.output || data.reply || finalReply;
+            }
+            // ----------------------------------------
+
             loadingMsg.classList.remove("loading");
-            // Ajuste 'data.output' selon la structure de ta réponse n8n
-            loadingMsg.textContent = data.output || data.reply || "J'ai reçu votre message, mais n8n n'a pas renvoyé de texte.";
+            loadingMsg.textContent = finalReply;
 
         } catch (error) {
             loadingMsg.remove();
-            addMessage("❌ Erreur de connexion au serveur n8n.", "error");
-            console.error("Détails de l'erreur:", error);
+            addMessage("❌ Impossible de joindre n8n. Vérifie ta connexion ou l'URL du Webhook.", "error");
+            console.error("Erreur:", error);
         }
     }
 
