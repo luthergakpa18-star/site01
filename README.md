@@ -1036,6 +1036,31 @@
       btn.textContent = 'Launch The AI Chat Demo';
     }, 2000);
   }
+  <script>
+  var vapiInstance = null;
+  const assistant = "c407de3b-5da2-4de8-ba5b-749fd19c97d6"; // Substitute with your assistant ID
+  const apiKey = "8e64bde1-ec72-44bc-a042-ce23ff861643"; // Substitute with your Public key from Vapi Dashboard.
+  const buttonConfig = {}; // Modify this as required
+
+  (function (d, t) {
+    var g = document.createElement(t),
+      s = d.getElementsByTagName(t)[0];
+    g.src =
+      "https://cdn.jsdelivr.net/gh/VapiAI/html-script-tag@latest/dist/assets/index.js";
+    g.defer = true;
+    g.async = true;
+    s.parentNode.insertBefore(g, s);
+
+    g.onload = function () {
+      vapiInstance = window.vapiSDK.run({
+        apiKey: apiKey, // mandatory
+        assistant: assistant, // mandatory
+        config: buttonConfig, // optional
+      });
+    };
+  })(document, "script");
+</script>
+
 </script>
 </body>
 </html>
