@@ -1,843 +1,1039 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="fr">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Agency Snapshot - AI Employee For Plumbers</title>
-  <script src="https://cdn.tailwindcss.com"></script>
-  <script crossorigin src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/react.min.js"></script>
-  <script crossorigin src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/react-dom.min.js"></script>
-</head>
-<body>
-  <div id="root"></div>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Agency Snapshot – AI Employee For Plumbers</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet" />
 
-  <script>
-    const React = window.React;
-    const ReactDOM = window.ReactDOM;
-    const { useState, useEffect, useRef } = React;
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
-    // --- Custom Hook for Scroll Animations ---
-    function useIntersectionObserver(options = { threshold: 0.1 }) {
-      const ref = useRef(null);
-      const [isVisible, setIsVisible] = useState(false);
-
-      useEffect(() => {
-        const currentRef = ref.current;
-        const observer = new IntersectionObserver(([entry]) => {
-          if (entry.isIntersecting) {
-            setIsVisible(true);
-            observer.unobserve(currentRef);
-          }
-        }, options);
-
-        if (currentRef) observer.observe(currentRef);
-        return () => { if (currentRef) observer.unobserve(currentRef); };
-      }, [options]);
-
-      return [ref, isVisible];
+    :root {
+      --bg: #0a0c10;
+      --card: #11141a;
+      --card2: #1e232d;
+      --border: rgba(255,255,255,0.05);
+      --slate-300: #cbd5e1;
+      --slate-400: #94a3b8;
+      --slate-500: #64748b;
+      --slate-600: #475569;
+      --slate-700: #334155;
+      --slate-800: #1e293b;
+      --slate-900: #0f172a;
+      --white: #ffffff;
+      --blue-400: #60a5fa;
+      --blue-500: #3b82f6;
+      --blue-600: #2563eb;
+      --indigo-400: #818cf8;
+      --indigo-500: #6366f1;
+      --indigo-600: #4f46e5;
+      --purple-400: #c084fc;
+      --purple-500: #a855f7;
+      --purple-600: #9333ea;
+      --pink-400: #f472b6;
+      --pink-500: #ec4899;
+      --pink-600: #db2777;
+      --yellow-500: #eab308;
+      --green-400: #4ade80;
+      --red-500: #ef4444;
     }
 
-    // --- Animated Input Component with Validation ---
-    const AnimatedInput = ({ id, label, type = "text", isPhone, delay = "" }) => {
-      const [val, setVal] = useState("");
-      const [touched, setTouched] = useState(false);
-      
-      const isValid = type === 'email' ? val.includes('@') && val.includes('.') : val.length > 2;
-      const isError = touched && !isValid && val.length > 0;
+    html { scroll-behavior: smooth; }
+    body {
+      background: var(--bg);
+      color: var(--slate-200, #e2e8f0);
+      font-family: 'Inter', sans-serif;
+      overflow-x: hidden;
+      min-height: 100vh;
+    }
+    ::selection { background: rgba(99,102,241,0.3); }
 
-      return React.createElement('div', {
-        className: `relative w-full group mb-2 opacity-0 cascade-enter ${delay}`,
-        style: {}
-      }, [
-        isPhone && React.createElement('div', {
-          key: 'phone-prefix',
-          className: "absolute left-4 top-1/2 -translate-y-1/2 flex items-center z-10 pointer-events-none transition-all"
-        }, [
-          React.createElement('span', { key: 'flag', className: "mr-2 text-xl leading-none" }, "🇺🇸"),
-          React.createElement('span', { key: 'code', className: "text-slate-400 text-sm" }, "(+1)")
-        ]),
-        React.createElement('input', {
-          key: 'input',
-          id: id,
-          type: type,
-          value: val,
-          onChange: (e) => setVal(e.target.value),
-          onBlur: () => setTouched(true),
-          placeholder: " ",
-          className: `peer w-full bg-[#1e232d] border-[1.5px] rounded-xl px-4 pt-6 pb-2 text-white transition-all duration-300 ease-in-out focus:outline-none focus:border-indigo-500 focus:shadow-[0_0_20px_rgba(99,102,241,0.3)]
-            ${isPhone ? 'pl-[85px]' : ''} 
-            ${isError ? 'border-red-500 shake focus:border-red-500 focus:shadow-[0_0_20px_rgba(239,68,68,0.3)]' : 'border-slate-700/50'}
-          `
-        }),
-        React.createElement('label', {
-          key: 'label',
-          htmlFor: id,
-          className: `absolute text-slate-500 transition-all duration-300 ease-in-out cursor-text truncate max-w-[80%]
-            peer-placeholder-shown:text-sm peer-placeholder-shown:top-4
-            peer-focus:text-[10px] peer-focus:top-1.5 peer-focus:text-indigo-400
-            ${val ? 'text-[10px] top-1.5' : ''}
-            ${isPhone ? 'left-[85px]' : 'left-4'}
-            ${isError ? 'text-red-400 peer-focus:text-red-400' : ''}
-          `
-        }, label),
-        val && isValid && React.createElement('svg', {
-          key: 'check',
-          className: "absolute right-4 top-1/2 -translate-y-1/2 w-5 h-5 text-green-400 star-fill",
-          viewBox: "0 0 24 24",
-          fill: "none",
-          stroke: "currentColor",
-          strokeWidth: "2"
-        }, [
-          React.createElement('path', { key: 'p1', d: "M22 11.08V12a10 10 0 1 1-5.93-9.14" }),
-          React.createElement('polyline', { key: 'p2', points: "22 4 12 14.01 9 11.01" })
-        ]),
-        isError && React.createElement('span', {
-          key: 'error',
-          className: "absolute -bottom-5 left-2 text-[10px] text-red-500 fade-in-up"
-        }, "Format invalide")
-      ]);
-    };
+    /* ===== ANIMATIONS ===== */
+    @keyframes fadeInUp {
+      from { opacity: 0; transform: translateY(30px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+    @keyframes cascadeEnter {
+      from { opacity: 0; transform: translateX(-30px); }
+      to   { opacity: 1; transform: translateX(0); }
+    }
+    @keyframes focusEnter {
+      from { opacity: 0; transform: scale(0.95); }
+      to   { opacity: 1; transform: scale(1); }
+    }
+    @keyframes shake {
+      10%,90% { transform: translate3d(-1px,0,0); }
+      20%,80% { transform: translate3d(2px,0,0); }
+      30%,50%,70% { transform: translate3d(-3px,0,0); }
+      40%,60% { transform: translate3d(3px,0,0); }
+    }
+    @keyframes pulseGlow {
+      from { box-shadow: 0 0 10px rgba(99,102,241,0.5); }
+      to   { box-shadow: 0 0 30px rgba(139,92,246,0.8); }
+    }
+    @keyframes starFill {
+      from { opacity: 0; transform: scale(0.5); }
+      to   { opacity: 1; transform: scale(1); filter: drop-shadow(0 0 6px rgba(139,92,246,0.6)); }
+    }
+    @keyframes scrollLeft {
+      0%   { transform: translateX(0); }
+      100% { transform: translateX(-50%); }
+    }
+    @keyframes avatarIn {
+      from { opacity:0; transform:scale(0.6) translateX(-10px); }
+      to   { opacity:1; transform:scale(1) translateX(0); }
+    }
+    @keyframes checkIn {
+      from { opacity:0; transform:scale(0.4); }
+      to   { opacity:1; transform:scale(1); }
+    }
 
-    const App = () => {
-      const [scrollProgress, setScrollProgress] = useState(0);
-      const [isSubmitting, setIsSubmitting] = useState(false);
+    .fade-in-up   { animation: fadeInUp 0.8s cubic-bezier(0.16,1,0.3,1) both; }
+    .cascade-enter{ animation: cascadeEnter 0.6s cubic-bezier(0.16,1,0.3,1) both; }
+    .focus-enter  { animation: focusEnter 1s cubic-bezier(0.16,1,0.3,1) both; }
+    .star-fill    { animation: starFill 0.6s cubic-bezier(0.16,1,0.3,1) both; }
 
-      // References for scroll-triggered animations
-      const [formRef, formVisible] = useIntersectionObserver({ threshold: 0.2 });
-      const [logosRef, logosVisible] = useIntersectionObserver({ threshold: 0.2 });
-      const [featuresRef, featuresVisible] = useIntersectionObserver({ threshold: 0.1 });
-      const [pricingRef, pricingVisible] = useIntersectionObserver({ threshold: 0.2 });
+    .delay-100 { animation-delay: 100ms; }
+    .delay-200 { animation-delay: 200ms; }
+    .delay-300 { animation-delay: 300ms; }
+    .delay-400 { animation-delay: 400ms; }
+    .delay-500 { animation-delay: 500ms; }
+    .delay-600 { animation-delay: 600ms; }
+    .delay-700 { animation-delay: 700ms; }
+    .delay-800 { animation-delay: 800ms; }
+    .delay-900 { animation-delay: 900ms; }
 
-      // Update progress bar on scroll
-      useEffect(() => {
-        const handleScroll = () => {
-          const totalScroll = document.documentElement.scrollTop;
-          const windowHeight = document.documentElement.scrollHeight - document.documentElement.clientHeight;
-          const scroll = `${(totalScroll / windowHeight) * 100}`;
-          setScrollProgress(scroll);
+    /* ===== SCROLL OBSERVE ===== */
+    .observe-fade { opacity:0; transform:translateY(40px); transition: opacity 0.7s ease, transform 0.7s ease; }
+    .observe-fade.visible { opacity:1; transform:none; }
+    .observe-cascade { opacity:0; transform:translateX(-30px); transition: opacity 0.6s ease, transform 0.6s ease; }
+    .observe-cascade.visible { opacity:1; transform:none; }
+    .observe-focus { opacity:0; transform:scale(0.95); transition: opacity 1s ease, transform 1s ease; }
+    .observe-focus.visible { opacity:1; transform:scale(1); }
+
+    /* ===== HEADER ===== */
+    header {
+      position: fixed; top:0; left:0; right:0; z-index:50;
+      background: rgba(10,12,16,0.8);
+      backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--border);
+    }
+    .header-inner {
+      max-width:1280px; margin:0 auto;
+      padding: 0 2rem;
+      height: 80px;
+      display:flex; align-items:center; justify-content:space-between;
+    }
+    .logo { display:flex; align-items:center; gap:10px; cursor:pointer; text-decoration:none; }
+    .logo-icon {
+      width:32px; height:32px; border-radius:8px;
+      background: linear-gradient(135deg,#fff,#94a3b8);
+      display:flex; align-items:center; justify-content:center;
+      transition: transform 0.3s;
+    }
+    .logo:hover .logo-icon { transform: scale(1.05); }
+    .logo-diamond {
+      width:16px; height:16px;
+      border:1.5px solid #0a0c10;
+      border-radius:3px;
+      transform: rotate(45deg);
+    }
+    .logo-text { display:flex; flex-direction:column; line-height:1; }
+    .logo-title { font-size:1.1rem; font-weight:700; color:#fff; letter-spacing:-0.02em; transition: color 0.3s; }
+    .logo:hover .logo-title { color:#c7d2fe; }
+    .logo-sub { font-size:0.75rem; color:var(--slate-400); margin-top:2px; }
+
+    nav { display:flex; align-items:center; gap:2rem; }
+    nav a {
+      font-size:0.875rem; font-weight:500; color:var(--slate-300);
+      text-decoration:none; position:relative;
+      transition: color 0.3s, transform 0.3s;
+    }
+    nav a::after {
+      content:''; position:absolute; bottom:-2px; left:0;
+      width:0; height:1px; background:var(--indigo-400);
+      transition: width 0.3s;
+    }
+    nav a:hover { color:#fff; transform: translateY(-2px); }
+    nav a:hover::after { width:100%; }
+
+    .btn-header {
+      display:flex; align-items:center; gap:8px;
+      font-size:0.875rem; font-weight:500;
+      background:var(--slate-800); color:#fff;
+      border:1px solid var(--slate-700);
+      padding:10px 20px; border-radius:9999px;
+      cursor:pointer; transition:all 0.3s;
+    }
+    .btn-header:hover {
+      background:var(--slate-700);
+      box-shadow: 0 0 15px rgba(79,70,229,0.3);
+    }
+    .hamburger { display:none; background:none; border:none; color:var(--slate-300); cursor:pointer; padding:8px; }
+    .hamburger:hover { color:#fff; }
+
+    /* ===== MAIN ===== */
+    main { padding-top:128px; padding-bottom:80px; }
+
+    /* ===== HERO ===== */
+    .hero {
+      position:relative; max-width:1280px; margin:0 auto;
+      padding:48px 2rem 0; text-align:center;
+      display:flex; flex-direction:column; align-items:center;
+    }
+    .hero-glow {
+      position:absolute; top:0; left:50%; transform:translateX(-50%);
+      width:100%; max-width:896px; height:400px;
+      background: radial-gradient(ellipse at center, rgba(37,99,235,0.3) 0%, rgba(99,102,241,0.2) 40%, rgba(147,51,234,0.3) 100%);
+      filter:blur(100px); border-radius:50%; pointer-events:none; z-index:-1;
+    }
+    h1 {
+      font-size: clamp(2.5rem, 6vw, 4.5rem);
+      font-weight:700; letter-spacing:-0.03em;
+      color:#fff; max-width:896px; line-height:1.1;
+    }
+    .grad-blue { background: linear-gradient(90deg,var(--blue-400),var(--blue-600)); -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text; }
+    .grad-indigo { background: linear-gradient(90deg,var(--indigo-400),var(--purple-500)); -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text; }
+
+    .hero-sub { margin-top:1.5rem; font-size:1.125rem; color:var(--slate-400); max-width:672px; }
+
+    .avatars { display:flex; margin-top:2rem; }
+    .avatars img {
+      width:40px; height:40px; border-radius:50%;
+      border:2px solid var(--bg); object-fit:cover;
+      margin-left:-12px; background:var(--slate-800);
+      animation: avatarIn 0.5s cubic-bezier(0.16,1,0.3,1) both;
+    }
+    .avatars img:first-child { margin-left:0; }
+
+    .stars-row { display:flex; align-items:center; gap:8px; margin-top:12px; }
+    .stars { display:flex; color:var(--yellow-500); }
+    .star-icon { width:16px; height:16px; fill:currentColor; }
+
+    .hero-ctas { margin-top:2.5rem; display:flex; flex-wrap:wrap; gap:1rem; justify-content:center; }
+    .btn-primary {
+      display:flex; align-items:center; gap:8px;
+      background:#fff; color:#0a0c10;
+      font-weight:600; padding:14px 32px; border-radius:9999px;
+      border:none; cursor:pointer; font-size:1rem;
+      transition:all 0.3s;
+    }
+    .btn-primary:hover {
+      background:#f1f5f9;
+      box-shadow: 0 0 20px rgba(59,130,246,0.6);
+      transform: translateY(-2px);
+    }
+    .btn-secondary {
+      display:flex; align-items:center; gap:8px;
+      background:transparent; color:#fff;
+      font-weight:600; padding:14px 32px; border-radius:9999px;
+      border:1px solid rgba(168,85,247,0.5); cursor:pointer; font-size:1rem;
+      transition:all 0.3s;
+    }
+    .btn-secondary:hover {
+      border-color:var(--purple-400);
+      background:rgba(168,85,247,0.1);
+      box-shadow: 0 0 15px rgba(168,85,247,0.4);
+    }
+    .arrow-icon { width:16px; height:16px; transition: transform 0.3s; }
+    .btn-primary:hover .arrow-icon,
+    .btn-secondary:hover .arrow-icon { transform: translateX(4px); }
+
+    /* ===== LEAD FORM ===== */
+    .form-section { margin-top:96px; max-width:768px; margin-left:auto; margin-right:auto; padding:0 1rem; position:relative; z-index:10; }
+    .form-gradient-border {
+      padding:2px; border-radius:24px;
+      background:linear-gradient(180deg,var(--blue-500),var(--indigo-500),var(--purple-600));
+      transition: box-shadow 1s;
+    }
+    .form-gradient-border.visible { box-shadow: 0 0 50px -10px rgba(99,102,241,0.6); }
+    .form-inner {
+      background:var(--card); border-radius:22px;
+      padding:2.5rem; position:relative; overflow:hidden;
+    }
+    .battery-hint {
+      position:absolute; top:8px; left:50%; transform:translateX(-50%);
+      display:flex; flex-direction:column; align-items:center;
+      font-size:10px; color:rgba(100,116,139,0.4); user-select:none; pointer-events:none;
+    }
+    .form-title { font-size:clamp(1.4rem,3vw,1.875rem); font-weight:700; color:#fff; text-align:center; margin-top:1rem; }
+    .form-sub { margin-top:8px; color:var(--slate-400); font-size:0.9rem; text-align:center; margin-bottom:2rem; }
+
+    .field-grid { display:grid; grid-template-columns:1fr 1fr; gap:12px; }
+    .field-grid-3 { display:grid; grid-template-columns:1fr 1fr; gap:12px; }
+
+    .input-wrap {
+      position:relative; width:100%; margin-bottom:8px;
+      opacity:0;
+      animation: cascadeEnter 0.6s cubic-bezier(0.16,1,0.3,1) both;
+    }
+    .input-wrap input {
+      width:100%; background:var(--card2);
+      border:1.5px solid rgba(51,65,85,0.5);
+      border-radius:12px; padding:24px 16px 8px;
+      color:#fff; font-size:0.95rem; font-family:inherit;
+      transition:all 0.3s; outline:none;
+    }
+    .input-wrap input:focus { border-color:var(--indigo-500); box-shadow:0 0 20px rgba(99,102,241,0.3); }
+    .input-wrap input.phone-pad { padding-left:85px; }
+    .input-wrap label {
+      position:absolute; left:16px;
+      font-size:0.875rem; color:var(--slate-500);
+      pointer-events:none; transition:all 0.3s;
+      top:50%; transform:translateY(-50%);
+    }
+    .input-wrap input:focus ~ label,
+    .input-wrap input:not(:placeholder-shown) ~ label {
+      font-size:10px; top:8px; transform:none; color:var(--indigo-400);
+    }
+    .input-wrap.has-error input { border-color:var(--red-500); box-shadow:0 0 20px rgba(239,68,68,0.3); animation: shake 0.4s ease; }
+    .input-wrap.has-error label { color:#f87171; }
+    .input-wrap.has-error input:focus ~ label { color:#f87171; }
+    .error-msg { position:absolute; bottom:-18px; left:8px; font-size:10px; color:var(--red-500); }
+
+    .check-icon {
+      position:absolute; right:16px; top:50%; transform:translateY(-50%);
+      width:20px; height:20px; color:var(--green-400);
+      animation: checkIn 0.4s ease both;
+      display:none;
+    }
+    .check-icon.show { display:block; }
+
+    .phone-prefix {
+      position:absolute; left:16px; top:50%; transform:translateY(-50%);
+      display:flex; align-items:center; gap:6px; pointer-events:none; z-index:1;
+    }
+    .phone-prefix span { color:var(--slate-400); font-size:0.875rem; }
+
+    .checkbox-row { display:flex; align-items:flex-start; gap:12px; padding:8px 0; }
+    .checkbox-row input[type="checkbox"] {
+      width:16px; height:16px; margin-top:2px; flex-shrink:0;
+      accent-color:var(--indigo-500); cursor:pointer;
+    }
+    .checkbox-row p { font-size:11px; color:var(--slate-500); line-height:1.4; }
+
+    .btn-launch {
+      width:100%; background:var(--blue-600); color:#fff;
+      font-weight:600; font-size:1.1rem; padding:16px;
+      border:none; border-radius:12px; cursor:pointer;
+      transition:all 0.3s; margin-top:8px;
+      opacity:0; animation: fadeInUp 0.6s ease 900ms both;
+    }
+    .btn-launch:hover { background:var(--indigo-600); box-shadow:0 0 20px rgba(79,70,229,0.5); }
+    .btn-launch.submitting { background:var(--indigo-500); animation: pulseGlow 0.5s ease-in-out infinite alternate; transform:scale(0.99); }
+
+    /* ===== LOGOS MARQUEE ===== */
+    .logos-section { margin-top:128px; overflow:hidden; text-align:center; }
+    .logos-title { font-size:clamp(1.1rem,2vw,1.5rem); font-weight:600; color:#fff; margin-bottom:2.5rem; }
+    .marquee-wrapper { display:flex; width:200%; }
+    .marquee-track { display:flex; width:50%; justify-content:space-around; align-items:center; animation: scrollLeft 35s linear infinite; opacity:0.7; }
+    .logo-item {
+      white-space:nowrap; cursor:default; font-weight:700; color:#fff;
+      transition:transform 0.3s, filter 0.3s; padding:0 1rem;
+    }
+    .logo-item:hover { transform:scale(1.1); filter:brightness(1.3); }
+    .logo-item.serif { font-style:italic; font-family:Georgia,serif; font-weight:400; }
+    .logo-diamond-sm {
+      display:inline-flex; align-items:center; justify-content:center;
+      width:22px; height:22px; border:2px solid #fff; border-radius:3px;
+      transform:rotate(45deg); margin-right:8px; vertical-align:middle;
+    }
+    .logo-diamond-sm::after { content:''; display:block; width:8px; height:8px; background:#fff; }
+    .logos-sub { margin-top:3rem; font-size:0.875rem; color:var(--slate-400); max-width:672px; margin-left:auto; margin-right:auto; }
+
+    /* ===== FEATURES ===== */
+    .features-section { margin-top:128px; max-width:1280px; margin-left:auto; margin-right:auto; padding:0 2rem; }
+    .features-grid { display:grid; grid-template-columns:repeat(4,1fr); gap:24px; }
+
+    .feature-card {
+      background:var(--card); border:1px solid var(--border);
+      border-radius:16px; padding:24px;
+      display:flex; flex-direction:column;
+      transition:all 0.5s;
+    }
+    .feature-card:hover { transform:translateY(-8px); }
+    .feature-card.blue:hover  { box-shadow:0 15px 40px -15px rgba(59,130,246,0.3); border-color:rgba(59,130,246,0.3); }
+    .feature-card.purple:hover{ box-shadow:0 15px 40px -15px rgba(168,85,247,0.3); border-color:rgba(168,85,247,0.3); }
+    .feature-card.pink:hover  { box-shadow:0 15px 40px -15px rgba(236,72,153,0.3); border-color:rgba(236,72,153,0.3); }
+    .feature-card.indigo:hover{ box-shadow:0 15px 40px -15px rgba(99,102,241,0.3); border-color:rgba(99,102,241,0.3); }
+
+    .card-preview {
+      height:192px; background:var(--card2); border-radius:12px;
+      margin-bottom:24px; display:flex; align-items:center; justify-content:center;
+      padding:16px; position:relative; overflow:hidden;
+    }
+
+    /* Chat preview */
+    .phone-frame {
+      width:60%; height:100%; background:var(--slate-900);
+      border-radius:8px 8px 0 0; border:1px solid var(--slate-700);
+      border-bottom:none; display:flex; flex-direction:column;
+      box-shadow:0 4px 20px rgba(0,0,0,0.5);
+    }
+    .phone-bar { height:24px; border-bottom:1px solid var(--slate-800); display:flex; align-items:center; justify-content:center; }
+    .phone-bar span { display:block; width:48px; height:4px; background:var(--slate-700); border-radius:2px; }
+    .chat-body { flex:1; padding:8px; display:flex; flex-direction:column; gap:8px; }
+    .bubble { border-radius:12px; }
+    .bubble.left  { width:75%; height:32px; background:rgba(37,99,235,0.2); border:1px solid rgba(59,130,246,0.3); align-self:flex-start; transition:background 0.3s; }
+    .bubble.right { width:66%; height:40px; background:var(--slate-800); align-self:flex-end; }
+    .feature-card.blue:hover .bubble.left { background:rgba(37,99,235,0.3); }
+
+    /* Calendar preview */
+    .cal-frame { width:100%; height:100%; background:var(--slate-900); border-radius:8px; border:1px solid var(--slate-700); padding:12px; display:flex; flex-direction:column; box-shadow:0 4px 20px rgba(0,0,0,0.5); }
+    .cal-top { display:flex; justify-content:space-between; align-items:center; margin-bottom:12px; }
+    .cal-bar { width:64px; height:8px; background:var(--slate-700); border-radius:4px; }
+    .cal-dot { width:16px; height:16px; border-radius:50%; background:var(--purple-500); }
+    .feature-card.purple:hover .cal-dot { animation: pulseGlow 1s ease-in-out infinite alternate; }
+    .cal-grid { display:grid; grid-template-columns:repeat(7,1fr); gap:4px; flex:1; }
+    .cal-day { border-radius:4px; }
+    .cal-day.header { height:4px; background:var(--slate-800); }
+    .cal-day.normal { background:var(--slate-800); }
+    .cal-day.active { background:var(--purple-600); transition:all 0.3s; }
+    .feature-card.purple:hover .cal-day.active { background:var(--purple-500); transform:scale(1.1); }
+
+    /* Review preview */
+    .review-card { width:85%; background:var(--slate-900); border-radius:8px; border:1px solid var(--slate-700); padding:12px; box-shadow:0 4px 20px rgba(0,0,0,0.5); transition:transform 0.5s; }
+    .feature-card.pink:hover .review-card { transform:scale(1.05); }
+    .reviewer { display:flex; align-items:center; gap:8px; margin-bottom:8px; }
+    .reviewer-avatar { width:24px; height:24px; border-radius:50%; background:rgba(219,39,119,0.5); flex-shrink:0; }
+    .reviewer-name { font-size:10px; font-weight:700; color:#fff; }
+    .reviewer-stars { display:flex; color:var(--yellow-500); }
+    .reviewer-stars svg { width:8px; height:8px; fill:currentColor; }
+    .reply-box {
+      width:100%; padding:8px; background:var(--slate-800);
+      border:1px solid var(--slate-700); border-radius:6px;
+      margin-top:12px; position:relative; overflow:hidden;
+      font-size:8px; color:var(--slate-400);
+    }
+    .reply-label { color:var(--pink-400); font-weight:600; display:block; margin-bottom:4px; font-size:8px; position:relative; z-index:1; }
+    .reply-line { width:75%; height:4px; background:var(--slate-600); border-radius:2px; position:relative; z-index:1; }
+    .reply-bg { position:absolute; inset:0; background:rgba(236,72,153,0.05); width:0; transition:width 0.7s; }
+    .feature-card.pink:hover .reply-bg { width:100%; }
+
+    /* Google preview */
+    .browser-frame { width:100%; height:100%; background:var(--slate-900); border-radius:8px; border:1px solid var(--slate-700); display:flex; flex-direction:column; overflow:hidden; box-shadow:0 4px 20px rgba(0,0,0,0.5); }
+    .browser-bar { height:24px; background:var(--slate-800); border-bottom:1px solid var(--slate-700); display:flex; align-items:center; padding:0 8px; gap:4px; }
+    .b-dot { width:6px; height:6px; border-radius:50%; transition:background 0.3s; }
+    .b-dot.red { background:#ef4444; } .feature-card.indigo:hover .b-dot.red { background:#f87171; }
+    .b-dot.yellow { background:#eab308; } .feature-card.indigo:hover .b-dot.yellow { background:#fde047; }
+    .b-dot.green { background:#22c55e; } .feature-card.indigo:hover .b-dot.green { background:#4ade80; }
+    .browser-body { flex:1; padding:8px; display:flex; gap:8px; }
+    .browser-sidebar { width:33%; background:var(--slate-800); border-radius:4px; transition:background 0.3s; }
+    .feature-card.indigo:hover .browser-sidebar { background:var(--slate-700); }
+    .browser-main { flex:1; display:flex; flex-direction:column; gap:8px; }
+    .browser-widget { width:100%; height:48px; background:rgba(99,102,241,0.1); border:1px solid rgba(99,102,241,0.3); border-radius:4px; transition:background 0.3s; }
+    .feature-card.indigo:hover .browser-widget { background:rgba(99,102,241,0.2); }
+    .browser-line { width:100%; height:32px; background:var(--slate-800); border-radius:4px; }
+
+    /* Feature labels */
+    .feature-label {
+      font-size:10px; font-weight:700; letter-spacing:0.1em;
+      text-transform:uppercase; color:var(--slate-500);
+      display:flex; align-items:center; gap:4px; margin-bottom:8px;
+      transition:color 0.3s;
+    }
+    .feature-card.blue:hover  .feature-label { color:var(--blue-400); }
+    .feature-card.purple:hover .feature-label { color:var(--purple-400); }
+    .feature-card.pink:hover  .feature-label { color:var(--pink-400); }
+    .feature-card.indigo:hover .feature-label { color:var(--indigo-400); }
+    .feature-label svg { width:12px; height:12px; }
+
+    .feature-title { font-size:1rem; font-weight:700; color:#fff; line-height:1.3; margin-bottom:auto; transition:color 0.3s; }
+    .feature-card.blue:hover  .feature-title { color:#eff6ff; }
+    .feature-card.purple:hover .feature-title { color:#faf5ff; }
+    .feature-card.pink:hover  .feature-title { color:#fdf2f8; }
+    .feature-card.indigo:hover .feature-title { color:#eef2ff; }
+
+    .btn-small {
+      display:inline-flex; align-items:center; gap:6px;
+      font-size:12px; font-weight:600;
+      background:#fff; color:#0a0c10;
+      padding:8px 16px; border-radius:9999px;
+      border:none; cursor:pointer; margin-top:1rem;
+      transition:background 0.3s;
+    }
+    .btn-small svg { width:12px; height:12px; transition:transform 0.3s; }
+    .feature-card:hover .btn-small svg { transform:translateX(3px); }
+    .feature-card.blue:hover  .btn-small { background:#dbeafe; }
+    .feature-card.purple:hover .btn-small { background:#f3e8ff; }
+    .feature-card.pink:hover  .btn-small { background:#fce7f3; }
+    .feature-card.indigo:hover .btn-small { background:#e0e7ff; }
+
+    /* ===== PRICING ===== */
+    .pricing-section { margin-top:128px; max-width:896px; margin-left:auto; margin-right:auto; padding:0 1rem; text-align:center; }
+    .section-title { font-size:clamp(1.6rem,4vw,2.5rem); font-weight:700; color:#fff; }
+    .section-sub { margin-top:12px; color:var(--slate-400); }
+
+    .pricing-card-wrap {
+      margin:2.5rem auto 0; max-width:400px;
+      padding:1px; border-radius:2rem;
+      background:linear-gradient(180deg,var(--slate-700),var(--bg));
+      transition:box-shadow 0.5s;
+    }
+    .pricing-card-wrap:hover { box-shadow: 0 0 40px -10px rgba(99,102,241,0.4); }
+    .pricing-card {
+      background:var(--card); border-radius:calc(2rem - 1px);
+      padding:2rem 2rem 2.5rem; display:flex; flex-direction:column;
+      position:relative; overflow:hidden;
+    }
+    .pricing-glow { position:absolute; top:0; right:0; width:192px; height:192px; background:rgba(59,130,246,0.1); filter:blur(48px); border-radius:50%; transition:background 0.7s; pointer-events:none; }
+    .pricing-card-wrap:hover .pricing-glow { background:rgba(99,102,241,0.2); }
+    .pricing-name { font-size:1.25rem; font-weight:700; color:#fff; margin-bottom:8px; }
+    .pricing-price { font-size:2.5rem; font-weight:900; color:#fff; margin-bottom:2rem; transition:transform 0.3s; transform-origin:left; }
+    .pricing-card-wrap:hover .pricing-price { transform:scale(1.05); }
+    .pricing-price span { font-size:1.125rem; font-weight:400; color:var(--slate-500); }
+    .pricing-features { list-style:none; text-align:left; margin-bottom:2rem; }
+    .pricing-features li { display:flex; align-items:center; gap:12px; font-size:0.875rem; color:var(--slate-300); padding:10px 0; border-bottom:1px solid var(--border); }
+    .pricing-features li:last-child { border-bottom:none; }
+    .check-blue { width:16px; height:16px; color:var(--blue-500); flex-shrink:0; transition:color 0.3s; }
+    .pricing-card-wrap:hover .check-blue { color:var(--indigo-400); }
+    .btn-trial {
+      width:100%; display:flex; align-items:center; justify-content:center; gap:8px;
+      background:#fff; color:#0a0c10;
+      font-weight:700; font-size:1rem; padding:16px;
+      border:none; border-radius:12px; cursor:pointer;
+      transition:all 0.3s;
+    }
+    .btn-trial:hover { background:#e0e7ff; box-shadow:0 5px 20px rgba(255,255,255,0.2); }
+    .btn-trial svg { width:16px; height:16px; transition:transform 0.3s; }
+    .btn-trial:hover svg { transform:translateX(4px); }
+
+    /* ===== CTA ===== */
+    .cta-section { margin-top:128px; max-width:896px; margin-left:auto; margin-right:auto; padding:0 1rem; text-align:center; }
+    .cta-grid { margin-top:2.5rem; display:grid; grid-template-columns:1fr 1fr; gap:24px; }
+    .cta-card {
+      background:var(--card); border:1px solid var(--border);
+      border-radius:16px; padding:2rem;
+      display:flex; flex-direction:column; text-align:left;
+      cursor:pointer; transition:all 0.3s;
+    }
+    .cta-card.cta-blue:hover  { border-color:rgba(59,130,246,0.5); transform:translateY(-4px); box-shadow:0 10px 30px -10px rgba(59,130,246,0.2); }
+    .cta-card.cta-purple:hover{ border-color:rgba(168,85,247,0.5); transform:translateY(-4px); box-shadow:0 10px 30px -10px rgba(168,85,247,0.2); }
+    .cta-card h3 { font-size:1.25rem; font-weight:700; color:#fff; margin-bottom:12px; transition:color 0.3s; }
+    .cta-card.cta-blue:hover h3 { color:#bfdbfe; }
+    .cta-card.cta-purple:hover h3 { color:#e9d5ff; }
+    .cta-card p { font-size:0.875rem; color:var(--slate-400); margin-bottom:2rem; flex:1; }
+
+    /* ===== FOOTER ===== */
+    footer { border-top:1px solid var(--border); padding:3rem 1rem 2rem; display:flex; flex-direction:column; align-items:center; }
+    .footer-logo {
+      width:32px; height:32px; border-radius:8px; opacity:0.2;
+      display:flex; align-items:center; justify-content:center;
+      margin-bottom:4rem; cursor:pointer; transition:opacity 0.3s;
+    }
+    .footer-logo:hover { opacity:0.5; }
+    .footer-logo-inner { width:18px; height:18px; border:1.5px solid #fff; border-radius:3px; transform:rotate(45deg); }
+    .progress-bar-wrap { width:100%; max-width:768px; height:1px; background:var(--slate-800); position:relative; margin-bottom:2rem; border-radius:9999px; overflow:hidden; }
+    .progress-bar {
+      position:absolute; left:0; top:0; height:100%;
+      background:linear-gradient(90deg,var(--blue-500),var(--indigo-500),var(--purple-500));
+      box-shadow:0 0 10px rgba(99,102,241,0.8);
+      transition:width 0.3s ease-out;
+      width:0%;
+    }
+    .footer-links { display:flex; gap:16px; margin-bottom:1rem; font-size:12px; color:var(--slate-500); }
+    .footer-links a { color:var(--slate-500); text-decoration:none; transition:color 0.3s; }
+    .footer-links a:hover { color:var(--indigo-400); }
+    .footer-copy { font-size:12px; color:var(--slate-600); font-weight:500; letter-spacing:0.05em; }
+
+    /* SVG Icons helper */
+    .icon { display:inline-block; vertical-align:middle; }
+
+    /* ===== RESPONSIVE ===== */
+    @media (max-width:1024px) {
+      .features-grid { grid-template-columns:repeat(2,1fr); }
+    }
+    @media (max-width:768px) {
+      nav, .btn-header { display:none; }
+      .hamburger { display:block; }
+      .features-grid { grid-template-columns:1fr; }
+      .cta-grid { grid-template-columns:1fr; }
+      .field-grid, .field-grid-3 { grid-template-columns:1fr; }
+      .hero-ctas { flex-direction:column; align-items:center; }
+      .btn-primary, .btn-secondary { width:100%; max-width:320px; justify-content:center; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- HEADER -->
+<header>
+  <div class="header-inner">
+    <a class="logo" href="#">
+      <div class="logo-icon"><div class="logo-diamond"></div></div>
+      <div class="logo-text">
+        <span class="logo-title">Agency</span>
+        <span class="logo-sub">Snapshot</span>
+      </div>
+    </a>
+
+    <nav>
+      <a href="#">Shop</a>
+      <a href="#">Projects</a>
+      <a href="#">Devices</a>
+      <a href="#">Blog</a>
+    </nav>
+
+    <div style="display:flex;align-items:center;gap:16px;">
+      <button class="btn-header">
+        Try AI Employee Free
+        <svg class="arrow-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+      </button>
+      <button class="hamburger" aria-label="Menu">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+      </button>
+    </div>
+  </div>
+</header>
+
+<!-- MAIN -->
+<main>
+
+  <!-- HERO -->
+  <section class="hero">
+    <div class="hero-glow"></div>
+
+    <h1 class="fade-in-up">
+      AI Employee For <span class="grad-blue">Plumbers</span><br/>
+      That Gets More <span class="grad-indigo">Leads</span>
+    </h1>
+
+    <p class="hero-sub fade-in-up delay-300">
+      Capture leads, book appointments, and respond 24/7 with your AI employee.
+    </p>
+
+    <div class="avatars">
+      <img src="https://i.pravatar.cc/100?img=11" alt="user" style="animation-delay:100ms">
+      <img src="https://i.pravatar.cc/100?img=12" alt="user" style="animation-delay:200ms">
+      <img src="https://i.pravatar.cc/100?img=13" alt="user" style="animation-delay:300ms">
+      <img src="https://i.pravatar.cc/100?img=14" alt="user" style="animation-delay:400ms">
+      <img src="https://i.pravatar.cc/100?img=15" alt="user" style="animation-delay:500ms">
+    </div>
+
+    <div class="stars-row fade-in-up delay-600">
+      <div class="stars">
+        <svg class="star-icon star-fill delay-600" viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+        <svg class="star-icon star-fill delay-700" viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+        <svg class="star-icon star-fill delay-700" viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+        <svg class="star-icon star-fill delay-800" viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+        <svg class="star-icon star-fill delay-900" viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+      </div>
+      <span style="font-size:0.875rem;font-weight:500;color:var(--slate-300);">50+ Happy clients</span>
+    </div>
+
+    <div class="hero-ctas fade-in-up delay-800">
+      <button class="btn-primary">
+        Try AI Employee Free
+        <svg class="arrow-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+      </button>
+      <button class="btn-secondary">
+        See a Demo
+        <svg class="arrow-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+      </button>
+    </div>
+  </section>
+
+  <!-- LEAD FORM -->
+  <section class="form-section">
+    <div class="form-gradient-border observe-focus" id="formBox">
+      <div class="form-inner">
+        <div class="battery-hint">
+          <span>Batterie faible</span>
+          <span>6% de batterie restante</span>
+        </div>
+
+        <h2 class="form-title">Turn website visitors into customers</h2>
+        <p class="form-sub">See Your AI Employee In Action</p>
+
+        <div style="width:100%;max-width:576px;margin:0 auto;">
+          <!-- Row 1 -->
+          <div class="field-grid" style="margin-bottom:8px;">
+            <div class="input-wrap delay-100" id="wrap-fname">
+              <input type="text" id="fname" placeholder=" " autocomplete="given-name" />
+              <label for="fname">First Name*</label>
+              <svg class="check-icon" id="check-fname" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+            </div>
+            <div class="input-wrap delay-200" id="wrap-lname">
+              <input type="text" id="lname" placeholder=" " autocomplete="family-name" />
+              <label for="lname">Last Name*</label>
+              <svg class="check-icon" id="check-lname" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+            </div>
+          </div>
+
+          <!-- Email -->
+          <div class="input-wrap delay-300" id="wrap-email" style="margin-bottom:8px;">
+            <input type="email" id="email" placeholder=" " autocomplete="email" />
+            <label for="email">Your Best Email*</label>
+            <svg class="check-icon" id="check-email" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+          </div>
+
+          <!-- Business -->
+          <div class="input-wrap delay-400" id="wrap-business" style="margin-bottom:8px;">
+            <input type="text" id="business" placeholder=" " />
+            <label for="business">Your Business Name*</label>
+            <svg class="check-icon" id="check-business" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+          </div>
+
+          <!-- Row 3 -->
+          <div class="field-grid-3" style="margin-bottom:8px;">
+            <div class="input-wrap delay-500" id="wrap-phone">
+              <div class="phone-prefix">
+                <span style="font-size:1.2rem;">🇺🇸</span>
+                <span>(+1)</span>
+              </div>
+              <input type="tel" id="phone" placeholder=" " class="phone-pad" autocomplete="tel" />
+              <label for="phone" style="left:85px;">Phone Number*</label>
+              <svg class="check-icon" id="check-phone" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+            </div>
+            <div class="input-wrap delay-600" id="wrap-business2">
+              <input type="text" id="business2" placeholder=" " />
+              <label for="business2">Your Business Name*</label>
+              <svg class="check-icon" id="check-business2" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+            </div>
+          </div>
+
+          <!-- Website -->
+          <div class="input-wrap delay-700" id="wrap-website" style="margin-bottom:8px;">
+            <input type="text" id="website" placeholder=" " />
+            <label for="website">What's the website that needs our lead grabbing chat widget?</label>
+            <svg class="check-icon" id="check-website" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+          </div>
+
+          <!-- Checkbox -->
+          <div class="checkbox-row" style="opacity:0;animation:fadeInUp 0.6s ease 800ms both;">
+            <input type="checkbox" id="consent" />
+            <p>By providing my phone number, I agree to receive text messages from AI Employee - Agency Snapshot.</p>
+          </div>
+
+          <!-- Submit -->
+          <button class="btn-launch" id="btnLaunch" onclick="handleLaunch()">
+            Launch The AI Chat Demo
+          </button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- LOGOS MARQUEE -->
+  <section class="logos-section observe-fade">
+    <h3 class="logos-title">Trusted by Leading Businesses</h3>
+    <div class="marquee-wrapper">
+      <div class="marquee-track" id="marquee1">
+        <div class="logo-item" style="font-size:1.5rem;letter-spacing:-0.05em;">night<span style="font-weight:300;">club</span></div>
+        <div class="logo-item" style="letter-spacing:0.15em;font-size:1rem;"><span class="logo-diamond-sm"></span>MONEYGRAM</div>
+        <div class="logo-item serif" style="font-size:1rem;">YAEL AMARI</div>
+        <div class="logo-item" style="font-size:1.5rem;letter-spacing:0.2em;">NIKO</div>
+        <div class="logo-item" style="font-size:1rem;"><span style="color:var(--blue-500);">↗</span>Agenci.</div>
+      </div>
+      <div class="marquee-track">
+        <div class="logo-item" style="font-size:1.5rem;letter-spacing:-0.05em;">night<span style="font-weight:300;">club</span></div>
+        <div class="logo-item" style="letter-spacing:0.15em;font-size:1rem;"><span class="logo-diamond-sm"></span>MONEYGRAM</div>
+        <div class="logo-item serif" style="font-size:1rem;">YAEL AMARI</div>
+        <div class="logo-item" style="font-size:1.5rem;letter-spacing:0.2em;">NIKO</div>
+        <div class="logo-item" style="font-size:1rem;"><span style="color:var(--blue-500);">↗</span>Agenci.</div>
+      </div>
+    </div>
+    <p class="logos-sub">Discover How AI Employees Can Save Time, Cut Costs, and Drive Revenue.</p>
+  </section>
+
+  <!-- FEATURES -->
+  <section class="features-section">
+    <div class="features-grid">
+
+      <!-- Feature 1 – Conversations AI -->
+      <div class="feature-card blue observe-cascade" style="transition-delay:100ms;">
+        <div class="card-preview">
+          <div class="phone-frame">
+            <div class="phone-bar"><span></span></div>
+            <div class="chat-body">
+              <div class="bubble left"></div>
+              <div class="bubble right"></div>
+              <div class="bubble left"></div>
+            </div>
+          </div>
+        </div>
+        <div style="flex:1;display:flex;flex-direction:column;">
+          <p class="feature-label">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="5" y="2" width="14" height="20" rx="2"/><line x1="12" y1="18" x2="12" y2="18.01"/></svg>
+            CONVERSATIONS AI
+          </p>
+          <h4 class="feature-title">Turn Website Visitors Into Customers on Autopilot</h4>
+          <button class="btn-small">
+            Try AI Employee Free
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+          </button>
+        </div>
+      </div>
+
+      <!-- Feature 2 – Booking AI -->
+      <div class="feature-card purple observe-cascade" style="transition-delay:200ms;">
+        <div class="card-preview">
+          <div class="cal-frame">
+            <div class="cal-top">
+              <div class="cal-bar"></div>
+              <div class="cal-dot"></div>
+            </div>
+            <div class="cal-grid">
+              <div class="cal-day header"></div><div class="cal-day header"></div><div class="cal-day header"></div><div class="cal-day header"></div><div class="cal-day header"></div><div class="cal-day header"></div><div class="cal-day header"></div>
+              <div class="cal-day normal"></div><div class="cal-day normal"></div><div class="cal-day normal"></div><div class="cal-day normal"></div><div class="cal-day normal"></div><div class="cal-day normal"></div><div class="cal-day normal"></div>
+              <div class="cal-day normal"></div><div class="cal-day normal"></div><div class="cal-day normal"></div><div class="cal-day normal"></div><div class="cal-day normal"></div><div class="cal-day active"></div><div class="cal-day normal"></div>
+            </div>
+          </div>
+        </div>
+        <div style="flex:1;display:flex;flex-direction:column;">
+          <p class="feature-label">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+            BOOKING AI
+          </p>
+          <h4 class="feature-title">Book Appointments Without Lifting a Finger</h4>
+          <button class="btn-small">
+            Try AI Employee Free
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+          </button>
+        </div>
+      </div>
+
+      <!-- Feature 3 – Reviews AI -->
+      <div class="feature-card pink observe-cascade" style="transition-delay:300ms;">
+        <div class="card-preview">
+          <div class="review-card">
+            <div class="reviewer">
+              <div class="reviewer-avatar"></div>
+              <div>
+                <div class="reviewer-name">Jane Williams</div>
+                <div class="reviewer-stars">
+                  <svg viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+                  <svg viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+                  <svg viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+                  <svg viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+                  <svg viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+                </div>
+              </div>
+            </div>
+            <div class="reply-box">
+              <div class="reply-bg"></div>
+              <span class="reply-label">Reply from owner</span>
+              <div class="reply-line"></div>
+            </div>
+          </div>
+        </div>
+        <div style="flex:1;display:flex;flex-direction:column;">
+          <p class="feature-label">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+            REVIEWS AI
+          </p>
+          <h4 class="feature-title">Respond to Reviews Effortlessly</h4>
+          <button class="btn-small">
+            Try AI Employee Free
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+          </button>
+        </div>
+      </div>
+
+      <!-- Feature 4 – Google Posting -->
+      <div class="feature-card indigo observe-cascade" style="transition-delay:400ms;">
+        <div class="card-preview">
+          <div class="browser-frame">
+            <div class="browser-bar">
+              <div class="b-dot red"></div>
+              <div class="b-dot yellow"></div>
+              <div class="b-dot green"></div>
+            </div>
+            <div class="browser-body">
+              <div class="browser-sidebar"></div>
+              <div class="browser-main">
+                <div class="browser-widget"></div>
+                <div class="browser-line"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div style="flex:1;display:flex;flex-direction:column;">
+          <p class="feature-label">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+            GOOGLE POSTING
+          </p>
+          <h4 class="feature-title">Turn Your Google Business Listing Into A Lead Machine</h4>
+          <button class="btn-small">
+            Try AI Employee Free
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+          </button>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- PRICING -->
+  <section class="pricing-section observe-fade">
+    <h2 class="section-title">
+      Get Started Today <span class="grad-indigo">for Free</span>
+    </h2>
+    <p class="section-sub">Enjoy a 14-day free trial on us</p>
+
+    <div class="pricing-card-wrap">
+      <div class="pricing-card">
+        <div class="pricing-glow"></div>
+        <div class="pricing-name">AI Employee Pro</div>
+        <div class="pricing-price">$297<span>/mo</span></div>
+
+        <ul class="pricing-features">
+          <li><svg class="check-blue" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg> Conversation AI</li>
+          <li><svg class="check-blue" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg> Reviews AI</li>
+          <li><svg class="check-blue" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg> Booking AI</li>
+          <li><svg class="check-blue" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg> Social Media AI</li>
+          <li><svg class="check-blue" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg> Google Posting</li>
+          <li><svg class="check-blue" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg> Review Widget</li>
+        </ul>
+
+        <button class="btn-trial">
+          Start A 14 Day Free Trial
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+        </button>
+      </div>
+    </div>
+  </section>
+
+  <!-- FINAL CTA -->
+  <section class="cta-section observe-fade">
+    <h2 class="section-title" style="font-size:clamp(1.4rem,3vw,1.875rem);">See It In Action</h2>
+    <p class="section-sub">Choose Your Experience</p>
+
+    <div class="cta-grid">
+      <div class="cta-card cta-blue">
+        <h3>Try It Yourself</h3>
+        <p>Get hands-on with our AI Employee and see how it works for your business.</p>
+        <button class="btn-small">
+          Explore the Demo
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+        </button>
+      </div>
+      <div class="cta-card cta-purple">
+        <h3>Book a Demo Call</h3>
+        <p>Schedule a live walkthrough with our team to see how it fits your needs.</p>
+        <button class="btn-small">
+          Schedule a Call
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+        </button>
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<!-- FOOTER -->
+<footer>
+  <div class="footer-logo">
+    <div class="footer-logo-inner"></div>
+  </div>
+
+  <div class="progress-bar-wrap">
+    <div class="progress-bar" id="progressBar"></div>
+  </div>
+
+  <div class="footer-links">
+    <a href="#">Privacy Policy</a>
+    <span>|</span>
+    <a href="#">Terms of Service</a>
+  </div>
+  <p class="footer-copy">Copyright 2025. All Rights Reserved.</p>
+</footer>
+
+<script>
+  // ===== SCROLL PROGRESS =====
+  window.addEventListener('scroll', () => {
+    const scrollTop = document.documentElement.scrollTop;
+    const scrollHeight = document.documentElement.scrollHeight - document.documentElement.clientHeight;
+    const progress = (scrollTop / scrollHeight) * 100;
+    document.getElementById('progressBar').style.width = progress + '%';
+  });
+
+  // ===== INTERSECTION OBSERVER =====
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        entry.target.classList.add('visible');
+        observer.unobserve(entry.target);
+      }
+    });
+  }, { threshold: 0.1 });
+
+  document.querySelectorAll('.observe-fade, .observe-cascade, .observe-focus').forEach(el => observer.observe(el));
+
+  // Form box special observer
+  const formObserver = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        entry.target.classList.add('visible');
+        // Trigger input animations
+        document.querySelectorAll('.input-wrap').forEach(w => {
+          w.style.animationPlayState = 'running';
+        });
+        formObserver.unobserve(entry.target);
+      }
+    });
+  }, { threshold: 0.2 });
+  formObserver.observe(document.getElementById('formBox'));
+
+  // ===== FORM VALIDATION =====
+  const validators = {
+    fname:    v => v.length > 2,
+    lname:    v => v.length > 2,
+    email:    v => v.includes('@') && v.includes('.'),
+    business: v => v.length > 2,
+    phone:    v => v.replace(/\D/,'').length >= 7,
+    business2:v => v.length > 2,
+    website:  v => v.length > 4
+  };
+
+  Object.keys(validators).forEach(id => {
+    const input = document.getElementById(id);
+    if (!input) return;
+    const wrap  = document.getElementById('wrap-' + id);
+    const check = document.getElementById('check-' + id);
+
+    input.addEventListener('input', () => {
+      const valid = validators[id](input.value);
+      if (valid) {
+        wrap.classList.remove('has-error');
+        if (check) check.classList.add('show');
+        // Remove old error
+        const err = wrap.querySelector('.error-msg');
+        if (err) err.remove();
+      } else {
+        if (check) check.classList.remove('show');
+      }
+    });
+
+    input.addEventListener('blur', () => {
+      if (input.value.length === 0) return;
+      const valid = validators[id](input.value);
+      if (!valid) {
+        wrap.classList.add('has-error');
+        if (check) check.classList.remove('show');
+        if (!wrap.querySelector('.error-msg')) {
+          const msg = document.createElement('span');
+          msg.className = 'error-msg';
+          msg.textContent = 'Format invalide';
+          wrap.appendChild(msg);
         }
-        window.addEventListener('scroll', handleScroll);
-        return () => window.removeEventListener('scroll', handleScroll);
-      }, []);
+      }
+    });
+  });
 
-      const handleDemoLaunch = (e) => {
-        e.preventDefault();
-        setIsSubmitting(true);
-        setTimeout(() => {
-          setIsSubmitting(false);
-        }, 500);
-      };
-
-      return React.createElement('div', {
-        className: "min-h-screen bg-[#0a0c10] text-slate-200 font-sans selection:bg-indigo-500/30 overflow-x-hidden"
-      }, [
-        React.createElement('style', { key: 'styles' }, `
-          .fade-in-up { animation: fadeInUp 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards; opacity: 0; }
-          @keyframes fadeInUp { from { opacity: 0; transform: translateY(30px); } to { opacity: 1; transform: translateY(0); } }
-          
-          .cascade-enter { animation: cascadeEnter 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards; opacity: 0; }
-          @keyframes cascadeEnter { from { opacity: 0; transform: translateX(-30px); } to { opacity: 1; transform: translateX(0); } }
-
-          .focus-enter { animation: focusEnter 1s cubic-bezier(0.16, 1, 0.3, 1) forwards; opacity: 0; transform: scale(0.95); }
-          @keyframes focusEnter { to { opacity: 1; transform: scale(1); } }
-
-          .shake { animation: shake 0.4s cubic-bezier(.36,.07,.19,.97) both; }
-          @keyframes shake { 10%, 90% { transform: translate3d(-1px, 0, 0); } 20%, 80% { transform: translate3d(2px, 0, 0); } 30%, 50%, 70% { transform: translate3d(-3px, 0, 0); } 40%, 60% { transform: translate3d(3px, 0, 0); } }
-
-          .pulse-glow { animation: pulseGlow 0.5s ease-in-out infinite alternate; }
-          @keyframes pulseGlow { from { box-shadow: 0 0 10px rgba(99,102,241,0.5); } to { box-shadow: 0 0 30px rgba(139,92,246,0.8); } }
-
-          .star-fill { animation: starFill 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards; opacity: 0; transform: scale(0.5); }
-          @keyframes starFill { to { opacity: 1; transform: scale(1); filter: drop-shadow(0 0 6px rgba(139, 92, 246, 0.6)); } }
-
-          .marquee-scroll { display: flex; animation: scrollLeft 35s linear infinite; }
-          @keyframes scrollLeft { 0% { transform: translateX(0); } 100% { transform: translateX(-50%); } }
-          
-          .delay-100 { animation-delay: 100ms; } .delay-200 { animation-delay: 200ms; }
-          .delay-300 { animation-delay: 300ms; } .delay-400 { animation-delay: 400ms; }
-          .delay-500 { animation-delay: 500ms; } .delay-600 { animation-delay: 600ms; }
-          .delay-700 { animation-delay: 700ms; } .delay-800 { animation-delay: 800ms; }
-        `),
-
-        // Header
-        React.createElement('header', {
-          key: 'header',
-          className: "fixed top-0 w-full z-50 bg-[#0a0c10]/80 backdrop-blur-md border-b border-white/5 transition-all"
-        }, React.createElement('div', { className: "max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between" }, [
-          React.createElement('div', { 
-            key: 'logo',
-            className: "flex items-center gap-2 group cursor-pointer" 
-          }, [
-            React.createElement('div', {
-              key: 'logo-box',
-              className: "w-8 h-8 rounded-lg bg-gradient-to-br from-white to-slate-400 flex items-center justify-center p-1.5 group-hover:scale-105 transition-transform duration-300"
-            }, React.createElement('div', { className: "w-full h-full border-[1.5px] border-[#0a0c10] rounded-sm transform rotate-45" })),
-            React.createElement('span', {
-              key: 'logo-text',
-              className: "text-xl font-bold tracking-tight text-white group-hover:text-indigo-200 transition-colors"
-            }, ["Agency", React.createElement('br', null), React.createElement('span', { className: "text-sm font-medium text-slate-400 leading-none block -mt-1" }, "Snapshot")])
-          ]),
-          
-          React.createElement('nav', {
-            key: 'nav',
-            className: "hidden md:flex items-center gap-8 text-sm font-medium text-slate-300"
-          }, ['Shop', 'Projects', 'Devices', 'Blog'].map((item) =>
-            React.createElement('a', {
-              key: item,
-              href: "#",
-              className: "hover:text-white hover:-translate-y-0.5 transition-all duration-300 relative after:absolute after:bottom-0 after:left-0 after:w-0 after:h-px after:bg-indigo-400 hover:after:w-full after:transition-all"
-            }, item)
-          )),
-
-          React.createElement('div', {
-            key: 'header-actions',
-            className: "flex items-center gap-4"
-          }, [
-            React.createElement('button', {
-              key: 'btn1',
-              className: "hidden md:flex items-center gap-2 text-sm font-medium bg-slate-800 hover:bg-slate-700 hover:shadow-[0_0_15px_rgba(79,70,229,0.3)] text-white px-5 py-2.5 rounded-full border border-slate-700 transition-all duration-300"
-            }, ["Try AI Employee Free ", React.createElement('svg', {
-              className: 'w-4 h-4',
-              viewBox: '0 0 24 24',
-              fill: 'none',
-              stroke: 'currentColor',
-              strokeWidth: '2'
-            }, [
-              React.createElement('line', { key: 'l1', x1: '5', y1: '12', x2: '19', y2: '12' }),
-              React.createElement('polyline', { key: 'l2', points: '12 5 19 12 12 19' })
-            ])]),
-            React.createElement('button', {
-              key: 'btn2',
-              className: "md:hidden p-2 text-slate-300 hover:text-white transition-colors"
-            }, React.createElement('svg', { className: 'w-6 h-6', viewBox: '0 0 24 24', fill: 'none', stroke: 'currentColor', strokeWidth: '2' }, [
-              React.createElement('line', { key: 'l1', x1: '3', y1: '6', x2: '21', y2: '6' }),
-              React.createElement('line', { key: 'l2', x1: '3', y1: '12', x2: '21', y2: '12' }),
-              React.createElement('line', { key: 'l3', x1: '3', y1: '18', x2: '21', y2: '18' })
-            ]))
-          ])
-        ])),
-
-        // Main Content
-        React.createElement('main', {
-          key: 'main',
-          className: "pt-32 pb-20"
-        }, [
-          // Hero Section
-          React.createElement('section', {
-            key: 'hero',
-            className: "relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-12 text-center flex flex-col items-center"
-          }, [
-            React.createElement('div', {
-              key: 'glow',
-              className: "absolute top-0 left-1/2 -translate-x-1/2 w-full max-w-4xl h-[400px] bg-gradient-to-r from-blue-600/30 via-indigo-500/20 to-purple-600/30 blur-[100px] rounded-full pointer-events-none -z-10 transition-opacity duration-1000"
-            }),
-
-            React.createElement('h1', {
-              key: 'h1',
-              className: "text-5xl md:text-6xl lg:text-7xl font-bold tracking-tight text-white max-w-4xl mx-auto leading-tight fade-in-up"
-            }, [
-              "AI Employee For ",
-              React.createElement('span', { key: 'span1', className: "text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-blue-600" }, "Plumbers"),
-              React.createElement('br', null),
-              "That Gets More ",
-              React.createElement('span', { key: 'span2', className: "text-transparent bg-clip-text bg-gradient-to-r from-indigo-400 to-purple-500" }, "Leads")
-            ]),
-            
-            React.createElement('p', {
-              key: 'subtitle',
-              className: "mt-6 text-lg md:text-xl text-slate-400 max-w-2xl mx-auto fade-in-up delay-300"
-            }, "Capture leads, book appointments, and respond 24/7 with your AI employee."),
-
-            React.createElement('div', {
-              key: 'avatars',
-              className: "mt-8 flex flex-col items-center gap-3"
-            }, [
-              React.createElement('div', {
-                key: 'avatar-group',
-                className: "flex -space-x-3"
-              }, [1, 2, 3, 4, 5].map((i) =>
-                React.createElement('img', {
-                  key: i,
-                  className: `w-10 h-10 rounded-full border-2 border-[#0a0c10] object-cover bg-slate-800 cascade-enter delay-${i * 100}`,
-                  src: `https://i.pravatar.cc/100?img=${i+10}`,
-                  alt: "User avatar"
-                })
-              )),
-              React.createElement('div', {
-                key: 'rating',
-                className: "flex items-center gap-2"
-              }, [
-                React.createElement('div', {
-                  key: 'stars',
-                  className: "flex text-yellow-500"
-                }, [1, 2, 3, 4, 5].map((i) =>
-                  React.createElement('svg', {
-                    key: i,
-                    className: `w-4 h-4 fill-current star-fill delay-${(i+5) * 100}`,
-                    viewBox: '0 0 24 24',
-                    stroke: 'currentColor',
-                    strokeWidth: '2'
-                  }, React.createElement('polygon', { points: '12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2' }))
-                )),
-                React.createElement('span', {
-                  key: 'text',
-                  className: "text-sm font-medium text-slate-300 fade-in-up delay-700"
-                }, "50+ Happy clients")
-              ])
-            ]),
-
-            React.createElement('div', {
-              key: 'cta-buttons',
-              className: "mt-10 flex flex-col sm:flex-row items-center justify-center gap-4 fade-in-up delay-800"
-            }, [
-              React.createElement('button', {
-                key: 'btn-primary',
-                className: "w-full sm:w-auto flex items-center justify-center gap-2 bg-white hover:bg-slate-100 text-[#0a0c10] font-semibold px-8 py-3.5 rounded-full transition-all duration-300 hover:shadow-[0_0_20px_rgba(59,130,246,0.6)] hover:-translate-y-0.5 group"
-              }, [
-                "Try AI Employee Free ",
-                React.createElement('svg', {
-                  key: 'arrow1',
-                  className: 'w-4 h-4 transition-transform group-hover:translate-x-1',
-                  viewBox: '0 0 24 24',
-                  fill: 'none',
-                  stroke: 'currentColor',
-                  strokeWidth: '2'
-                }, [
-                  React.createElement('line', { key: 'l1', x1: '5', y1: '12', x2: '19', y2: '12' }),
-                  React.createElement('polyline', { key: 'l2', points: '12 5 19 12 12 19' })
-                ])
-              ]),
-              React.createElement('button', {
-                key: 'btn-secondary',
-                className: "w-full sm:w-auto flex items-center justify-center gap-2 bg-transparent text-white font-semibold px-8 py-3.5 rounded-full border border-purple-500/50 hover:border-purple-400 hover:bg-purple-500/10 transition-all duration-300 hover:shadow-[0_0_15px_rgba(168,85,247,0.4)]"
-              }, "See a Demo")
-            ])
-          ]),
-
-          // Lead Form Section
-          React.createElement('section', {
-            key: 'form-section',
-            ref: formRef,
-            className: "mt-24 max-w-3xl mx-auto px-4 sm:px-6 relative z-10"
-          }, React.createElement('div', {
-            className: `relative p-[2px] rounded-3xl bg-gradient-to-b from-blue-500 via-indigo-500 to-purple-600 transition-all duration-1000 ${formVisible ? 'shadow-[0_0_50px_-10px_rgba(99,102,241,0.6)] focus-enter' : 'shadow-none opacity-0'}`
-          }, React.createElement('div', { className: "bg-[#11141a] rounded-[22px] p-6 sm:p-10 w-full h-full flex flex-col items-center relative overflow-hidden" }, [
-            React.createElement('div', {
-              key: 'phone-status',
-              className: "absolute top-2 left-1/2 -translate-x-1/2 flex flex-col items-center text-[10px] text-slate-500/40 select-none"
-            }, ["Batterie faible", "6% de batterie restante"]),
-
-            React.createElement('h2', {
-              key: 'form-title',
-              className: `text-2xl sm:text-3xl font-bold text-white mt-4 text-center ${formVisible ? 'fade-in-up delay-100' : 'opacity-0'}`
-            }, "Turn website visitors into customers"),
-
-            React.createElement('p', {
-              key: 'form-subtitle',
-              className: `mt-2 text-slate-400 text-sm sm:text-base text-center mb-8 ${formVisible ? 'fade-in-up delay-200' : 'opacity-0'}`
-            }, "See Your AI Employee In Action"),
-
-            React.createElement('form', {
-              key: 'form',
-              className: "w-full max-w-xl space-y-3"
-            }, [
-              React.createElement('div', {
-                key: 'row1',
-                className: "grid grid-cols-1 sm:grid-cols-2 gap-3"
-              }, [
-                React.createElement(AnimatedInput, { key: 'fname', id: "fname", label: "First Name*", delay: "delay-100" }),
-                React.createElement(AnimatedInput, { key: 'lname', id: "lname", label: "Last Name*", delay: "delay-200" })
-              ]),
-              
-              React.createElement(AnimatedInput, { key: 'email', id: "email", type: "email", label: "Your Best Email*", delay: "delay-300" }),
-              React.createElement(AnimatedInput, { key: 'business', id: "business", label: "Your Business Name*", delay: "delay-400" }),
-              
-              React.createElement('div', {
-                key: 'row2',
-                className: "grid grid-cols-1 sm:grid-cols-2 gap-3"
-              }, [
-                React.createElement(AnimatedInput, { key: 'phone', id: "phone", type: "tel", label: "Phone Number*", isPhone: true, delay: "delay-500" }),
-                React.createElement(AnimatedInput, { key: 'business-dup', id: "business-dup", label: "Your Business Name*", delay: "delay-600" })
-              ]),
-
-              React.createElement(AnimatedInput, { key: 'website', id: "website", label: "What's the website that needs our lead grabbing chat widget?", delay: "delay-700" }),
-              
-              React.createElement('div', {
-                key: 'checkbox',
-                className: `flex items-start gap-3 py-2 ${formVisible ? 'fade-in-up delay-800' : 'opacity-0'}`
-              }, [
-                React.createElement('div', {
-                  key: 'cb-container',
-                  className: "mt-1 flex-shrink-0"
-                }, React.createElement('input', { type: "checkbox", className: "w-4 h-4 rounded bg-[#1e232d] border-slate-700 accent-indigo-500 cursor-pointer transition-colors" })),
-                React.createElement('p', {
-                  key: 'cb-text',
-                  className: "text-[11px] text-slate-500 leading-tight"
-                }, "By providing my phone number, I agree to receive text messages from AI Employee - Agency Snapshot.")
-              ]),
-
-              React.createElement('button', {
-                key: 'submit',
-                type: "button",
-                onClick: handleDemoLaunch,
-                className: `w-full text-white font-semibold text-lg py-4 rounded-xl transition-all duration-300 mt-2 active:scale-[0.98] 
-                  ${isSubmitting ? 'bg-indigo-500 pulse-glow scale-[0.99]' : 'bg-blue-600 hover:bg-indigo-600 hover:shadow-[0_0_20px_rgba(79,70,229,0.5)]'}
-                  ${formVisible ? 'fade-in-up delay-[900ms]' : 'opacity-0'}
-                `
-              }, isSubmitting ? 'Connecting...' : 'Launch The AI Chat Demo')
-            ])
-          ]))))),
-
-          // Logos Section
-          React.createElement('section', {
-            key: 'logos',
-            ref: logosRef,
-            className: `mt-32 max-w-full overflow-hidden px-4 text-center transition-all duration-700 ${logosVisible ? 'opacity-100' : 'opacity-0 translate-y-10'}`
-          }, [
-            React.createElement('h3', {
-              key: 'logos-title',
-              className: "text-xl md:text-2xl font-semibold text-white mb-10"
-            }, "Trusted by Leading Businesses"),
-            
-            React.createElement('div', {
-              key: 'logos-container',
-              className: "relative flex w-[200%] sm:w-[150%] md:w-[120%]"
-            }, [
-              React.createElement('div', {
-                key: 'logos1',
-                className: "marquee-scroll w-1/2 flex justify-around items-center opacity-70"
-              }, [
-                React.createElement('div', { key: 'logo1', className: "text-2xl font-black tracking-tighter lowercase flex items-center hover:scale-110 hover:brightness-125 transition-all duration-300 cursor-default" }, ["night", React.createElement('span', { className: "font-light" }, "club")]),
-                React.createElement('div', { key: 'logo2', className: "text-xl font-bold tracking-widest uppercase flex items-center gap-2 hover:scale-110 hover:brightness-125 transition-all duration-300 cursor-default" }, [React.createElement('div', { className: "w-6 h-6 border-2 border-white rounded-sm transform rotate-45 flex items-center justify-center" }, React.createElement('div', { className: "w-2 h-2 bg-white" })), "MONEYGRAM"]),
-                React.createElement('div', { key: 'logo3', className: "text-lg font-serif italic tracking-wide hover:scale-110 hover:brightness-125 transition-all duration-300 cursor-default" }, "YAEL AMARI"),
-                React.createElement('div', { key: 'logo4', className: "text-2xl font-bold tracking-widest hover:scale-110 hover:brightness-125 transition-all duration-300 cursor-default" }, "NIKO"),
-                React.createElement('div', { key: 'logo5', className: "text-xl font-bold flex items-center gap-1 hover:scale-110 hover:brightness-125 transition-all duration-300 cursor-default" }, [React.createElement('span', { className: "text-blue-500" }, "↗"), "Agenci."])
-              ]),
-              React.createElement('div', {
-                key: 'logos2',
-                className: "marquee-scroll w-1/2 flex justify-around items-center opacity-70"
-              }, [
-                React.createElement('div', { key: 'logo1', className: "text-2xl font-black tracking-tighter lowercase flex items-center hover:scale-110 hover:brightness-125 transition-all duration-300 cursor-default" }, ["night", React.createElement('span', { className: "font-light" }, "club")]),
-                React.createElement('div', { key: 'logo2', className: "text-xl font-bold tracking-widest uppercase flex items-center gap-2 hover:scale-110 hover:brightness-125 transition-all duration-300 cursor-default" }, [React.createElement('div', { className: "w-6 h-6 border-2 border-white rounded-sm transform rotate-45 flex items-center justify-center" }, React.createElement('div', { className: "w-2 h-2 bg-white" })), "MONEYGRAM"]),
-                React.createElement('div', { key: 'logo3', className: "text-lg font-serif italic tracking-wide hover:scale-110 hover:brightness-125 transition-all duration-300 cursor-default" }, "YAEL AMARI"),
-                React.createElement('div', { key: 'logo4', className: "text-2xl font-bold tracking-widest hover:scale-110 hover:brightness-125 transition-all duration-300 cursor-default" }, "NIKO"),
-                React.createElement('div', { key: 'logo5', className: "text-xl font-bold flex items-center gap-1 hover:scale-110 hover:brightness-125 transition-all duration-300 cursor-default" }, [React.createElement('span', { className: "text-blue-500" }, "↗"), "Agenci."])
-              ])
-            ]),
-            
-            React.createElement('p', {
-              key: 'logos-text',
-              className: "mt-12 text-sm text-slate-400 max-w-2xl mx-auto"
-            }, "Discover How AI Employees Can Save Time, Cut Costs, and Drive Revenue.")
-          ]),
-
-          // Features Grid
-          React.createElement('section', {
-            key: 'features',
-            ref: featuresRef,
-            className: "mt-32 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8"
-          }, React.createElement('div', { className: "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6" }, [
-            // Feature 1
-            React.createElement('div', {
-              key: 'f1',
-              className: `bg-[#11141a] border border-white/5 rounded-2xl p-6 flex flex-col group hover:-translate-y-2 hover:shadow-[0_15px_40px_-15px_rgba(59,130,246,0.3)] hover:border-blue-500/30 transition-all duration-500 ${featuresVisible ? 'cascade-enter delay-100' : 'opacity-0'}`
-            }, [
-              React.createElement('div', {
-                key: 'img1',
-                className: "h-48 bg-[#1e232d] rounded-xl mb-6 flex items-center justify-center p-4 relative overflow-hidden"
-              }, React.createElement('div', { className: "w-2/3 h-full bg-slate-900 rounded-t-lg border-t border-x border-slate-700 flex flex-col shadow-lg" }, [
-                React.createElement('div', { key: 'h1', className: "h-6 border-b border-slate-800 flex items-center justify-center" }, React.createElement('div', { className: "w-12 h-1 bg-slate-700 rounded-full" })),
-                React.createElement('div', { key: 'c1', className: "flex-1 p-2 space-y-2" }, [
-                  React.createElement('div', { key: 'l1', className: "w-3/4 h-8 bg-blue-600/20 rounded-r-xl rounded-bl-xl border border-blue-500/30 self-start ml-2 group-hover:bg-blue-600/30 transition-colors" }),
-                  React.createElement('div', { key: 'l2', className: "w-2/3 h-10 bg-slate-800 rounded-l-xl rounded-br-xl self-end ml-auto" }),
-                  React.createElement('div', { key: 'l3', className: "w-5/6 h-8 bg-blue-600/20 rounded-r-xl rounded-bl-xl border border-blue-500/30 self-start ml-2 group-hover:bg-blue-600/30 transition-colors" })
-                ])
-              ])),
-              React.createElement('div', {
-                key: 'content1',
-                className: "flex-1 flex flex-col"
-              }, [
-                React.createElement('p', {
-                  key: 'label1',
-                  className: "text-[10px] font-bold tracking-wider text-slate-500 uppercase mb-2 flex items-center gap-1 group-hover:text-blue-400 transition-colors"
-                }, [
-                  React.createElement('svg', { key: 'icon1', className: 'w-3 h-3 group-hover:animate-[shake_0.5s_ease-in-out_infinite]', viewBox: '0 0 24 24', fill: 'none', stroke: 'currentColor', strokeWidth: '2' }, [
-                    React.createElement('rect', { key: 'r1', x: '5', y: '2', width: '14', height: '20', rx: '2', ry: '2' }),
-                    React.createElement('line', { key: 'l1', x1: '12', y1: '18', x2: '12.01', y2: '18' })
-                  ]),
-                  " CONVERSATIONS AI"
-                ]),
-                React.createElement('h4', {
-                  key: 'title1',
-                  className: "text-lg font-bold text-white mb-2 leading-tight group-hover:text-blue-50 transition-colors"
-                }, "Turn Website Visitors Into Customers on Autopilot"),
-                React.createElement('div', {
-                  key: 'btn1',
-                  className: "mt-auto pt-4"
-                }, React.createElement('button', { className: "flex items-center gap-2 text-xs font-semibold bg-white text-black px-4 py-2 rounded-full w-fit group-hover:bg-blue-100 transition-colors" }, [
-                  "Try AI Employee Free ",
-                  React.createElement('svg', { className: 'w-3 h-3 transition-transform group-hover:translate-x-1', viewBox: '0 0 24 24', fill: 'none', stroke: 'currentColor', strokeWidth: '2' }, [
-                    React.createElement('line', { key: 'l1', x1: '5', y1: '12', x2: '19', y2: '12' }),
-                    React.createElement('polyline', { key: 'l2', points: '12 5 19 12 12 19' })
-                  ])
-                ]))
-              ])
-            ]),
-
-            // Feature 2
-            React.createElement('div', {
-              key: 'f2',
-              className: `bg-[#11141a] border border-white/5 rounded-2xl p-6 flex flex-col group hover:-translate-y-2 hover:shadow-[0_15px_40px_-15px_rgba(168,85,247,0.3)] hover:border-purple-500/30 transition-all duration-500 ${featuresVisible ? 'cascade-enter delay-200' : 'opacity-0'}`
-            }, [
-              React.createElement('div', {
-                key: 'img2',
-                className: "h-48 bg-[#1e232d] rounded-xl mb-6 flex items-center justify-center p-4"
-              }, React.createElement('div', { className: "w-full h-full bg-slate-900 rounded-lg border border-slate-700 p-3 flex flex-col shadow-lg" }, [
-                React.createElement('div', { key: 'h1', className: "flex justify-between items-center mb-3" }, [
-                  React.createElement('div', { className: "w-16 h-2 bg-slate-700 rounded" }),
-                  React.createElement('div', { className: "w-4 h-4 rounded-full bg-purple-500 group-hover:animate-pulse" })
-                ]),
-                React.createElement('div', { key: 'g1', className: "grid grid-cols-7 gap-1 mb-2" }, [...Array(7)].map((_,i)=>React.createElement('div', { key: i, className: "h-1 bg-slate-800 rounded" }))),
-                React.createElement('div', { key: 'g2', className: "grid grid-cols-7 gap-1 flex-1" }, [...Array(21)].map((_,i)=>React.createElement('div', { key: i, className: `rounded transition-colors duration-500 ${i===12 ? 'bg-purple-600 group-hover:bg-purple-500 group-hover:scale-110' : 'bg-slate-800'}` })))
-              ])),
-              React.createElement('div', {
-                key: 'content2',
-                className: "flex-1 flex flex-col"
-              }, [
-                React.createElement('p', {
-                  key: 'label2',
-                  className: "text-[10px] font-bold tracking-wider text-slate-500 uppercase mb-2 flex items-center gap-1 group-hover:text-purple-400 transition-colors"
-                }, [
-                  React.createElement('svg', { key: 'icon2', className: 'w-3 h-3 group-hover:animate-pulse', viewBox: '0 0 24 24', fill: 'none', stroke: 'currentColor', strokeWidth: '2' }, [
-                    React.createElement('rect', { key: 'r1', x: '3', y: '4', width: '18', height: '18', rx: '2' }),
-                    React.createElement('line', { key: 'l1', x1: '16', y1: '2', x2: '16', y2: '6' }),
-                    React.createElement('line', { key: 'l2', x1: '8', y1: '2', x2: '8', y2: '6' }),
-                    React.createElement('line', { key: 'l3', x1: '3', y1: '10', x2: '21', y2: '10' })
-                  ]),
-                  " BOOKING AI"
-                ]),
-                React.createElement('h4', {
-                  key: 'title2',
-                  className: "text-lg font-bold text-white mb-2 leading-tight group-hover:text-purple-50 transition-colors"
-                }, "Book Appointments Without Lifting a Finger"),
-                React.createElement('div', {
-                  key: 'btn2',
-                  className: "mt-auto pt-4"
-                }, React.createElement('button', { className: "flex items-center gap-2 text-xs font-semibold bg-white text-black px-4 py-2 rounded-full w-fit group-hover:bg-purple-100 transition-colors" }, [
-                  "Try AI Employee Free ",
-                  React.createElement('svg', { className: 'w-3 h-3 transition-transform group-hover:translate-x-1', viewBox: '0 0 24 24', fill: 'none', stroke: 'currentColor', strokeWidth: '2' }, [
-                    React.createElement('line', { key: 'l1', x1: '5', y1: '12', x2: '19', y2: '12' }),
-                    React.createElement('polyline', { key: 'l2', points: '12 5 19 12 12 19' })
-                  ])
-                ]))
-              ])
-            ]),
-
-            // Feature 3
-            React.createElement('div', {
-              key: 'f3',
-              className: `bg-[#11141a] border border-white/5 rounded-2xl p-6 flex flex-col group hover:-translate-y-2 hover:shadow-[0_15px_40px_-15px_rgba(236,72,153,0.3)] hover:border-pink-500/30 transition-all duration-500 ${featuresVisible ? 'cascade-enter delay-300' : 'opacity-0'}`
-            }, [
-              React.createElement('div', {
-                key: 'img3',
-                className: "h-48 bg-[#1e232d] rounded-xl mb-6 flex items-center justify-center p-4 relative"
-              }, React.createElement('div', { className: "w-5/6 bg-slate-900 rounded-lg border border-slate-700 p-3 shadow-lg group-hover:scale-105 transition-transform duration-500" }, [
-                React.createElement('div', { key: 'header', className: "flex items-center gap-2 mb-2" }, [
-                  React.createElement('div', { key: 'avatar', className: "w-6 h-6 rounded-full bg-pink-600/50" }),
-                  React.createElement('div', { key: 'info' }, [
-                    React.createElement('div', { key: 't1', className: "text-[10px] font-bold text-white" }, "Jane Williams"),
-                    React.createElement('div', { key: 'stars', className: "flex text-yellow-500" }, [
-                      React.createElement('svg', { key: 's1', className: 'w-2 h-2 fill-current', viewBox: '0 0 24 24' }, React.createElement('polygon', { points: '12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2' })),
-                      React.createElement('svg', { key: 's2', className: 'w-2 h-2 fill-current', viewBox: '0 0 24 24' }, React.createElement('polygon', { points: '12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2' })),
-                      React.createElement('svg', { key: 's3', className: 'w-2 h-2 fill-current', viewBox: '0 0 24 24' }, React.createElement('polygon', { points: '12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2' })),
-                      React.createElement('svg', { key: 's4', className: 'w-2 h-2 fill-current', viewBox: '0 0 24 24' }, React.createElement('polygon', { points: '12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2' })),
-                      React.createElement('svg', { key: 's5', className: 'w-2 h-2 fill-current', viewBox: '0 0 24 24' }, React.createElement('polygon', { points: '12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2' }))
-                    ])
-                  ])
-                ]),
-                React.createElement('div', { key: 'reply', className: "w-full p-2 bg-slate-800 rounded text-[8px] text-slate-400 border border-slate-700 mt-3 relative overflow-hidden" }, [
-                  React.createElement('span', { key: 'label', className: "text-pink-400 font-semibold block mb-0.5 relative z-10" }, "Reply from owner"),
-                  React.createElement('div', { key: 'line', className: "w-3/4 h-1 bg-slate-600 rounded relative z-10" }),
-                  React.createElement('div', { key: 'overlay', className: "absolute inset-0 bg-pink-500/5 w-0 group-hover:w-full transition-all duration-700" })
-                ])
-              ])),
-              React.createElement('div', {
-                key: 'content3',
-                className: "flex-1 flex flex-col"
-              }, [
-                React.createElement('p', {
-                  key: 'label3',
-                  className: "text-[10px] font-bold tracking-wider text-slate-500 uppercase mb-2 flex items-center gap-1 group-hover:text-pink-400 transition-colors"
-                }, [
-                  React.createElement('svg', { key: 'icon3', className: 'w-3 h-3 group-hover:animate-bounce', viewBox: '0 0 24 24', fill: 'none', stroke: 'currentColor', strokeWidth: '2' }, React.createElement('path', { d: 'M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z' })),
-                  " REVIEWS AI"
-                ]),
-                React.createElement('h4', {
-                  key: 'title3',
-                  className: "text-lg font-bold text-white mb-2 leading-tight group-hover:text-pink-50 transition-colors"
-                }, "Respond to Reviews Effortlessly"),
-                React.createElement('div', {
-                  key: 'btn3',
-                  className: "mt-auto pt-4"
-                }, React.createElement('button', { className: "flex items-center gap-2 text-xs font-semibold bg-white text-black px-4 py-2 rounded-full w-fit group-hover:bg-pink-100 transition-colors" }, [
-                  "Try AI Employee Free ",
-                  React.createElement('svg', { className: 'w-3 h-3 transition-transform group-hover:translate-x-1', viewBox: '0 0 24 24', fill: 'none', stroke: 'currentColor', strokeWidth: '2' }, [
-                    React.createElement('line', { key: 'l1', x1: '5', y1: '12', x2: '19', y2: '12' }),
-                    React.createElement('polyline', { key: 'l2', points: '12 5 19 12 12 19' })
-                  ])
-                ]))
-              ])
-            ]),
-
-            // Feature 4
-            React.createElement('div', {
-              key: 'f4',
-              className: `bg-[#11141a] border border-white/5 rounded-2xl p-6 flex flex-col group hover:-translate-y-2 hover:shadow-[0_15px_40px_-15px_rgba(99,102,241,0.3)] hover:border-indigo-500/30 transition-all duration-500 ${featuresVisible ? 'cascade-enter delay-400' : 'opacity-0'}`
-            }, [
-              React.createElement('div', {
-                key: 'img4',
-                className: "h-48 bg-[#1e232d] rounded-xl mb-6 flex items-center justify-center p-4 relative"
-              }, React.createElement('div', { className: "w-full h-full bg-slate-900 rounded-lg border border-slate-700 flex flex-col overflow-hidden shadow-lg" }, [
-                React.createElement('div', { key: 'header', className: "h-6 bg-slate-800 flex items-center px-2 border-b border-slate-700 gap-1" }, [
-                  React.createElement('div', { key: 'r', className: "w-1.5 h-1.5 rounded-full bg-red-500 group-hover:bg-red-400" }),
-                  React.createElement('div', { key: 'y', className: "w-1.5 h-1.5 rounded-full bg-yellow-500 group-hover:bg-yellow-400" }),
-                  React.createElement('div', { key: 'g', className: "w-1.5 h-1.5 rounded-full bg-green-500 group-hover:bg-green-400" })
-                ]),
-                React.createElement('div', { key: 'content', className: "flex-1 p-2 flex gap-2" }, [
-                  React.createElement('div', { key: 'sidebar', className: "w-1/3 h-full bg-slate-800 rounded group-hover:bg-slate-700 transition-colors" }),
-                  React.createElement('div', { key: 'main', className: "flex-1 space-y-2" }, [
-                    React.createElement('div', { key: 'box1', className: "w-full h-12 bg-indigo-500/10 border border-indigo-500/30 rounded group-hover:bg-indigo-500/20 transition-colors" }),
-                    React.createElement('div', { key: 'box2', className: "w-full h-8 bg-slate-800 rounded" })
-                  ])
-                ])
-              ])),
-              React.createElement('div', {
-                key: 'content4',
-                className: "flex-1 flex flex-col"
-              }, [
-                React.createElement('p', {
-                  key: 'label4',
-                  className: "text-[10px] font-bold tracking-wider text-slate-500 uppercase mb-2 flex items-center gap-1 group-hover:text-indigo-400 transition-colors"
-                }, [
-                  React.createElement('svg', { key: 'icon4', className: 'w-3 h-3 group-hover:animate-pulse', viewBox: '0 0 24 24', fill: 'none', stroke: 'currentColor', strokeWidth: '2' }, [
-                    React.createElement('path', { key: 'p1', d: 'M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z' }),
-                    React.createElement('circle', { key: 'p2', cx: '12', cy: '10', r: '3' })
-                  ]),
-                  " GOOGLE POSTING"
-                ]),
-                React.createElement('h4', {
-                  key: 'title4',
-                  className: "text-lg font-bold text-white mb-2 leading-tight group-hover:text-indigo-50 transition-colors"
-                }, "Turn Your Google Business Listing Into A Lead Machine"),
-                React.createElement('div', {
-                  key: 'btn4',
-                  className: "mt-auto pt-4"
-                }, React.createElement('button', { className: "flex items-center gap-2 text-xs font-semibold bg-white text-black px-4 py-2 rounded-full w-fit group-hover:bg-indigo-100 transition-colors" }, [
-                  "Try AI Employee Free ",
-                  React.createElement('svg', { className: 'w-3 h-3 transition-transform group-hover:translate-x-1', viewBox: '0 0 24 24', fill: 'none', stroke: 'currentColor', strokeWidth: '2' }, [
-                    React.createElement('line', { key: 'l1', x1: '5', y1: '12', x2: '19', y2: '12' }),
-                    React.createElement('polyline', { key: 'l2', points: '12 5 19 12 12 19' })
-                  ])
-                ]))
-              ])
-            ])
-          ])),
-
-          // Pricing Section
-          React.createElement('section', {
-            key: 'pricing',
-            ref: pricingRef,
-            className: `mt-32 max-w-4xl mx-auto px-4 sm:px-6 text-center transition-all duration-700 ${pricingVisible ? 'opacity-100' : 'opacity-0 translate-y-10'}`
-          }, [
-            React.createElement('h2', {
-              key: 'pricing-title',
-              className: "text-3xl md:text-4xl font-bold text-white"
-            }, ["Get Started Today ", React.createElement('span', { className: "text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-indigo-500" }, "for Free")]),
-            React.createElement('p', {
-              key: 'pricing-subtitle',
-              className: "mt-3 text-slate-400"
-            }, "Enjoy a 14-day free trial on us"),
-
-            React.createElement('div', {
-              key: 'pricing-card',
-              className: "mt-10 mx-auto max-w-sm relative p-[1px] rounded-[2rem] bg-gradient-to-b from-slate-700 to-[#0a0c10] group hover:shadow-[0_0_40px_-10px_rgba(99,102,241,0.4)] transition-shadow duration-500"
-            }, React.createElement('div', { className: "bg-[#11141a] rounded-[2rem] p-8 pb-10 flex flex-col relative overflow-hidden h-full" }, [
-              React.createElement('div', {
-                key: 'glow-bg',
-                className: "absolute top-0 right-0 w-48 h-48 bg-blue-500/10 blur-3xl rounded-full group-hover:bg-indigo-500/20 transition-colors duration-700"
-              }),
-
-              React.createElement('h3', {
-                key: 'card-title',
-                className: "text-xl font-bold text-white mb-2"
-              }, "AI Employee Pro"),
-              React.createElement('div', {
-                key: 'price',
-                className: "text-4xl font-black text-white mb-8 group-hover:scale-105 transition-transform origin-left duration-300"
-              }, ["$297", React.createElement('span', { className: "text-lg font-normal text-slate-500" }, "/mo")]),
-              
-              React.createElement('ul', {
-                key: 'features-list',
-                className: "space-y-4 mb-8 text-left text-sm text-slate-300"
-              }, ['Conversation AI', 'Reviews AI', 'Booking AI', 'Social Media AI', 'Google Posting', 'Review Widget'].map((item, i) =>
-                React.createElement('li', {
-                  key: i,
-                  className: `flex items-center gap-3 ${pricingVisible ? 'fade-in-up' : 'opacity-0'}`,
-                  style: { animationDelay: `${(i+2)*100}ms` }
-                }, [
-                  React.createElement('svg', {
-                    key: 'check',
-                    className: "w-4 h-4 text-blue-500 group-hover:text-indigo-400 transition-colors",
-                    viewBox: '0 0 24 24',
-                    fill: 'none',
-                    stroke: 'currentColor',
-                    strokeWidth: '2'
-                  }, [
-                    React.createElement('path', { key: 'p1', d: 'M22 11.08V12a10 10 0 1 1-5.93-9.14' }),
-                    React.createElement('polyline', { key: 'p2', points: '22 4 12 14.01 9 11.01' })
-                  ]),
-                  item
-                ])
-              )),
-
-              React.createElement('button', {
-                key: 'cta-btn',
-                className: "w-full flex items-center justify-center gap-2 bg-white hover:bg-indigo-50 text-[#0a0c10] font-bold px-6 py-4 rounded-xl transition-all mt-auto group-hover:shadow-[0_5px_20px_rgba(255,255,255,0.2)]"
-              }, [
-                "Start A 14 Day Free Trial ",
-                React.createElement('svg', {
-                  key: 'arrow',
-                  className: 'w-4 h-4 group-hover:translate-x-1 transition-transform',
-                  viewBox: '0 0 24 24',
-                  fill: 'none',
-                  stroke: 'currentColor',
-                  strokeWidth: '2'
-                }, [
-                  React.createElement('line', { key: 'l1', x1: '5', y1: '12', x2: '19', y2: '12' }),
-                  React.createElement('polyline', { key: 'l2', points: '12 5 19 12 12 19' })
-                ])
-              ])
-            ]))
-          ]),
-
-          // Final CTA Section
-          React.createElement('section', {
-            key: 'final-cta',
-            className: "mt-32 max-w-4xl mx-auto px-4 sm:px-6 text-center"
-          }, [
-            React.createElement('h2', {
-              key: 'cta-title',
-              className: "text-3xl font-bold text-white mb-2"
-            }, "See It In Action"),
-            React.createElement('p', {
-              key: 'cta-subtitle',
-              className: "text-lg text-slate-400 mb-10"
-            }, "Choose Your Experience"),
-
-            React.createElement('div', {
-              key: 'cta-grid',
-              className: "grid grid-cols-1 md:grid-cols-2 gap-6"
-            }, [
-              React.createElement('div', {
-                key: 'cta1',
-                className: "bg-[#11141a] border border-white/5 rounded-2xl p-8 flex flex-col text-left group hover:border-blue-500/50 hover:-translate-y-1 hover:shadow-[0_10px_30px_-10px_rgba(59,130,246,0.2)] transition-all duration-300 cursor-pointer"
-              }, [
-                React.createElement('h3', {
-                  key: 'title1',
-                  className: "text-xl font-bold text-white mb-3 group-hover:text-blue-200 transition-colors"
-                }, "Try It Yourself"),
-                React.createElement('p', {
-                  key: 'text1',
-                  className: "text-sm text-slate-400 mb-8 flex-1"
-                }, "Get hands-on with our AI Employee and see how it works for your business."),
-                React.createElement('button', {
-                  key: 'btn1',
-                  className: "flex items-center gap-2 text-sm font-semibold bg-white text-black px-6 py-3 rounded-full w-fit group-hover:bg-blue-100 transition-colors"
-                }, [
-                  "Explore the Demo ",
-                  React.createElement('svg', {
-                    className: 'w-4 h-4 transition-transform group-hover:translate-x-1',
-                    viewBox: '0 0 24 24',
-                    fill: 'none',
-                    stroke: 'currentColor',
-                    strokeWidth: '2'
-                  }, [
-                    React.createElement('line', { key: 'l1', x1: '5', y1: '12', x2: '19', y2: '12' }),
-                    React.createElement('polyline', { key: 'l2', points: '12 5 19 12 12 19' })
-                  ])
-                ])
-              ]),
-
-              React.createElement('div', {
-                key: 'cta2',
-                className: "bg-[#11141a] border border-white/5 rounded-2xl p-8 flex flex-col text-left group hover:border-purple-500/50 hover:-translate-y-1 hover:shadow-[0_10px_30px_-10px_rgba(168,85,247,0.2)] transition-all duration-300 cursor-pointer"
-              }, [
-                React.createElement('h3', {
-                  key: 'title2',
-                  className: "text-xl font-bold text-white mb-3 group-hover:text-purple-200 transition-colors"
-                }, "Book a Demo Call"),
-                React.createElement('p', {
-                  key: 'text2',
-                  className: "text-sm text-slate-400 mb-8 flex-1"
-                }, "Schedule a live walkthrough with our team to see how it fits your needs."),
-                React.createElement('button', {
-                  key: 'btn2',
-                  className: "flex items-center gap-2 text-sm font-semibold bg-white text-black px-6 py-3 rounded-full w-fit group-hover:bg-purple-100 transition-colors"
-                }, [
-                  "Schedule a Call ",
-                  React.createElement('svg', {
-                    className: 'w-4 h-4 transition-transform group-hover:translate-x-1',
-                    viewBox: '0 0 24 24',
-                    fill: 'none',
-                    stroke: 'currentColor',
-                    strokeWidth: '2'
-                  }, [
-                    React.createElement('line', { key: 'l1', x1: '5', y1: '12', x2: '19', y2: '12' }),
-                    React.createElement('polyline', { key: 'l2', points: '12 5 19 12 12 19' })
-                  ])
-                ])
-              ])
-            ])
-          ])
-        ]),
-
-        // Footer
-        React.createElement('footer', {
-          key: 'footer',
-          className: "border-t border-white/5 pt-12 pb-8 flex flex-col items-center relative"
-        }, [
-          React.createElement('div', {
-            key: 'logo-mini',
-            className: "w-8 h-8 rounded-lg flex items-center justify-center p-1.5 opacity-20 mb-16 hover:opacity-50 transition-opacity cursor-pointer"
-          }, React.createElement('div', { className: "w-full h-full border-[1.5px] border-white rounded-sm transform rotate-45" })),
-          
-          React.createElement('div', {
-            key: 'progress-bar',
-            className: "w-full max-w-3xl h-[1px] bg-slate-800 relative mb-8 overflow-hidden rounded-full"
-          }, React.createElement('div', {
-            className: "absolute left-0 top-0 h-full bg-gradient-to-r from-blue-500 via-indigo-500 to-purple-500 shadow-[0_0_10px_rgba(99,102,241,0.8)] transition-all duration-300 ease-out",
-            style: { width: `${scrollProgress}%` }
-          })),
-
-          React.createElement('div', {
-            key: 'footer-links',
-            className: "flex gap-4 mb-4 text-xs text-slate-500"
-          }, [
-            React.createElement('a', { key: 'l1', href: "#", className: "hover:text-indigo-400 transition-colors" }, "Privacy Policy"),
-            React.createElement('span', { key: 'sep' }, "|"),
-            React.createElement('a', { key: 'l2', href: "#", className: "hover:text-indigo-400 transition-colors" }, "Terms of Service")
-          ]),
-
-          React.createElement('p', {
-            key: 'copyright',
-            className: "text-xs text-slate-600 font-medium tracking-wide"
-          }, "Copyright 2025. All Rights Reserved.")
-        ])
-      ]);
-    };
-
-    ReactDOM.render(React.createElement(App), document.getElementById('root'));
-  </script>
+  // ===== SUBMIT BUTTON =====
+  function handleLaunch() {
+    const btn = document.getElementById('btnLaunch');
+    btn.classList.add('submitting');
+    btn.textContent = 'Connecting...';
+    setTimeout(() => {
+      btn.classList.remove('submitting');
+      btn.textContent = 'Launch The AI Chat Demo';
+    }, 2000);
+  }
+</script>
 </body>
 </html>
-
