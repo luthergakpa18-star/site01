@@ -1,5 +1,3 @@
-[mon site1 .html](https://github.com/user-attachments/files/25920097/mon.site1.html)
-
 <!DOCTYPE html>
 <html lang="fr">
 <head>
@@ -1036,31 +1034,131 @@
       btn.textContent = 'Launch The AI Chat Demo';
     }, 2000);
   }
-  <script>
-  var vapiInstance = null;
-  const assistant = "c407de3b-5da2-4de8-ba5b-749fd19c97d6"; // Substitute with your assistant ID
-  const apiKey = "8e64bde1-ec72-44bc-a042-ce23ff861643"; // Substitute with your Public key from Vapi Dashboard.
-  const buttonConfig = {}; // Modify this as required
+
+  // ===== VAPI SDK INITIALIZATION =====
+  const assistant = "c407de3b-5da2-4de8-ba5b-749fd19c97d6";
+  const apiKey = "8e64bde1-ec72-44bc-a042-ce23ff861643";
+  const buttonConfig = {};
 
   (function (d, t) {
     var g = document.createElement(t),
       s = d.getElementsByTagName(t)[0];
-    g.src =
-      "https://cdn.jsdelivr.net/gh/VapiAI/html-script-tag@latest/dist/assets/index.js";
+    g.src = "https://cdn.jsdelivr.net/gh/VapiAI/html-script-tag@latest/dist/assets/index.js";
     g.defer = true;
     g.async = true;
     s.parentNode.insertBefore(g, s);
 
     g.onload = function () {
-      vapiInstance = window.vapiSDK.run({
-        apiKey: apiKey, // mandatory
-        assistant: assistant, // mandatory
-        config: buttonConfig, // optional
+      window.vapiSDK.run({
+        apiKey: apiKey,
+        assistant: assistant,
+        config: buttonConfig,
       });
     };
   })(document, "script");
+
+  // ===== EMBEDDED CHAT WIDGET =====
+  (function() {
+    const WEBHOOK_URL = "https://n8n-production-880e.up.railway.app/webhook-test/25d6fb26-dff2-48a2-8b5b-cdea8edfd512";
+
+    const css = `
+      @keyframes chatGlow {
+        0%, 100% { filter: drop-shadow(0 0 8px rgba(102, 126, 234, 0.6)); }
+        50% { filter: drop-shadow(0 0 20px rgba(102, 126, 234, 0.9)); }
+      }
+      #chat-bubble { position: fixed; bottom: 20px; right: 20px; z-index: 9999; cursor: pointer; animation: chatGlow 2s ease-in-out infinite; transition: transform 0.3s ease; }
+      #chat-bubble:hover { transform: scale(1.1); }
+      #chat-bubble svg { width: 60px; height: 60px; }
+      #chat-window { position: fixed; bottom: 90px; right: 20px; width: 400px; height: 500px; background: white; border-radius: 12px; box-shadow: 0 5px 40px rgba(0,0,0,0.16); display: none; flex-direction: column; z-index: 9999; }
+      #chat-window.active { display: flex; }
+      .chat-header { background: linear-gradient(135deg, #667eea, #764ba2); color: white; padding: 15px; font-weight: bold; border-radius: 12px 12px 0 0; }
+      .chat-messages { flex: 1; overflow-y: auto; padding: 15px; display: flex; flex-direction: column; gap: 10px; }
+      .msg { display: flex; margin-bottom: 5px; }
+      .msg.user { justify-content: flex-end; }
+      .msg.bot { justify-content: flex-start; }
+      .msg-text { max-width: 70%; padding: 10px 15px; border-radius: 8px; font-size: 14px; }
+      .msg.user .msg-text { background: #667eea; color: white; }
+      .msg.bot .msg-text { background: #e9ecef; color: #333; }
+      .chat-input { display: flex; gap: 10px; padding: 10px; border-top: 1px solid #e0e0e0; }
+      .chat-input input { flex: 1; border: 1px solid #ddd; padding: 8px 12px; border-radius: 6px; outline: none; }
+      .chat-input button { background: #667eea; color: white; border: none; padding: 8px 15px; border-radius: 6px; cursor: pointer; }
+      .chat-input button:hover { background: #5568d3; }
+      @media (max-width: 600px) { #chat-window { width: 100vw; height: 100vh; right: 0; bottom: 0; border-radius: 0; } }
+    `;
+
+    const html = `
+      <style>${css}</style>
+      <div id="chat-bubble">
+        <svg fill="#667eea" viewBox="0 0 24 24"><path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2z"/></svg>
+      </div>
+      <div id="chat-window">
+        <div class="chat-header">💬 luther</div>
+        <div class="chat-messages" id="messages"></div>
+        <div class="chat-input">
+          <input type="text" id="input" placeholder="Votre message...">
+          <button id="send">Envoyer</button>
+        </div>
+      </div>
+    `;
+
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', init);
+    } else {
+      init();
+    }
+
+    function init() {
+      document.body.insertAdjacentHTML('beforeend', html);
+
+      const bubble = document.getElementById('chat-bubble');
+      const window_ = document.getElementById('chat-window');
+      const messages = document.getElementById('messages');
+      const input = document.getElementById('input');
+      const send = document.getElementById('send');
+
+      messages.innerHTML = '<div class="msg bot"><div class="msg-text">Bonjour! Comment puis-je vous aider?</div></div>';
+
+      bubble.addEventListener('click', () => {
+        window_.classList.toggle('active');
+        if (window_.classList.contains('active')) input.focus();
+      });
+
+      function sendMsg() {
+        const text = input.value.trim();
+        if (!text) return;
+
+        messages.innerHTML += `<div class="msg user"><div class="msg-text">${text}</div></div>`;
+        input.value = '';
+        messages.scrollTop = messages.scrollHeight;
+
+        fetch(WEBHOOK_URL, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            message: text,
+            timestamp: new Date().toISOString(),
+            sessionId: localStorage.getItem('chatId') || (localStorage.setItem('chatId', 'user_' + Date.now()), localStorage.getItem('chatId'))
+          })
+        })
+        .then(r => r.json())
+        .then(d => {
+          const response = d.response || d.message || "Désolé, erreur de connexion";
+          messages.innerHTML += `<div class="msg bot"><div class="msg-text">${response}</div></div>`;
+          messages.scrollTop = messages.scrollHeight;
+        })
+        .catch(() => {
+          messages.innerHTML += `<div class="msg bot"><div class="msg-text">Erreur de connexion</div></div>`;
+          messages.scrollTop = messages.scrollHeight;
+        });
+      }
+
+      send.addEventListener('click', sendMsg);
+      input.addEventListener('keypress', (e) => {
+        if (e.key === 'Enter') sendMsg();
+      });
+    }
+  })();
 </script>
 
-</script>
 </body>
 </html>
