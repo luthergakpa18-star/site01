@@ -1034,39 +1034,40 @@
       btn.textContent = 'Launch The AI Chat Demo';
     }, 2000);
   }
-  <script>
-  var vapiInstance = null;
-  const assistant = "c407de3b-5da2-4de8-ba5b-749fd19c97d6"; // Substitute with your assistant ID
-  const apiKey = "8e64bde1-ec72-44bc-a042-ce23ff861643"; // Substitute with your Public key from Vapi Dashboard.
-  const buttonConfig = {}; // Modify this as required
+
+  // ===== VAPI SDK INITIALIZATION =====
+  const assistant = "c407de3b-5da2-4de8-ba5b-749fd19c97d6";
+  const apiKey = "8e64bde1-ec72-44bc-a042-ce23ff861643";
+  const buttonConfig = {};
 
   (function (d, t) {
     var g = document.createElement(t),
       s = d.getElementsByTagName(t)[0];
-    g.src =
-      "https://cdn.jsdelivr.net/gh/VapiAI/html-script-tag@latest/dist/assets/index.js";
+    g.src = "https://cdn.jsdelivr.net/gh/VapiAI/html-script-tag@latest/dist/assets/index.js";
     g.defer = true;
     g.async = true;
     s.parentNode.insertBefore(g, s);
 
     g.onload = function () {
-      vapiInstance = window.vapiSDK.run({
-        apiKey: apiKey, // mandatory
-        assistant: assistant, // mandatory
-        config: buttonConfig, // optional
+      window.vapiSDK.run({
+        apiKey: apiKey,
+        assistant: assistant,
+        config: buttonConfig,
       });
     };
   })(document, "script");
-</script>
-<!-- COPIEZ ET COLLEZ CECI DANS VOTRE SITE -->
 
-<script>
+  // ===== EMBEDDED CHAT WIDGET =====
   (function() {
-    // ✅ VOTRE WEBHOOK N8N (déjà configuré)
     const WEBHOOK_URL = "https://n8n-production-880e.up.railway.app/webhook-test/25d6fb26-dff2-48a2-8b5b-cdea8edfd512";
 
     const css = `
-      #chat-bubble { position: fixed; bottom: 20px; right: 20px; z-index: 9999; cursor: pointer; }
+      @keyframes chatGlow {
+        0%, 100% { filter: drop-shadow(0 0 8px rgba(102, 126, 234, 0.6)); }
+        50% { filter: drop-shadow(0 0 20px rgba(102, 126, 234, 0.9)); }
+      }
+      #chat-bubble { position: fixed; bottom: 20px; right: 20px; z-index: 9999; cursor: pointer; animation: chatGlow 2s ease-in-out infinite; transition: transform 0.3s ease; }
+      #chat-bubble:hover { transform: scale(1.1); }
       #chat-bubble svg { width: 60px; height: 60px; }
       #chat-window { position: fixed; bottom: 90px; right: 20px; width: 400px; height: 500px; background: white; border-radius: 12px; box-shadow: 0 5px 40px rgba(0,0,0,0.16); display: none; flex-direction: column; z-index: 9999; }
       #chat-window.active { display: flex; }
@@ -1158,6 +1159,6 @@
     }
   })();
 </script>
-</script>
+
 </body>
 </html>
