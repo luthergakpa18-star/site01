@@ -1159,6 +1159,13 @@
     }
   })();
 </script>
+< lien href =" https://cdn.jsdelivr.net/npm/@n8n/chat/dist/style.css " rel =" stylesheet " />
+< type de script =" module " >
+	 import { createChat } à partir de 'https://cdn.jsdelivr.net/npm/@n8n/chat/dist/chat.bundle.es.js' ;
 
+	 createChat({
+		 webhookUrl : 'https://n8n-production-880e.up.railway.app/webhook/d63d47c7-98d1-4593-b73b-52fd6375a053/chat'
+	}));
+</ script >
 </body>
 </html>
